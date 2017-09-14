@@ -4,6 +4,19 @@
 Creating a label
 
 ```php
+<?php
+
+use ThirtyBees\PostNL\Entity\Dimension;
+use ThirtyBees\PostNL\Entity\Shipment;
+use ThirtyBees\PostNL\PostNL;
+use ThirtyBees\PostNL\Entity\Address;
+use ThirtyBees\PostNL\Entity\Customer;
+use ThirtyBees\PostNL\Request\LabelRequest;
+use ThirtyBees\PostNL\Service\BarcodeService;
+use ThirtyBees\PostNL\Service\LabellingService;
+
+require_once __DIR__.'/vendor/autoload.php';
+
 PostNL::setApiKey('9s8adf7as8f6gasf6sdf6asfsfaw4f');
 PostNL::setSandbox(true);
 PostNL::setCustomer(
