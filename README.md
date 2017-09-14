@@ -11,7 +11,7 @@ PostNL::setCustomer(
         ->setCollectionLocation('123456')
         ->setCustomerCode('DEVC')
         ->setCustomerNumber('11223344')
-        ->setContactPerson('Dave')
+        ->setContactPerson('Lesley')
         ->setAddress(Address::create([
             'AddressType' => '02',
             'City'        => 'Hoofddorp',
@@ -21,7 +21,7 @@ PostNL::setCustomer(
             'Street'      => 'Siriusdreef',
             'Zipcode'     => '2132WT',
         ]))
-        ->setEmail('postnl@mijnpresta.nl')
+        ->setEmail('michael@thirtybees.com')
         ->setName('Michael')
 );
 
