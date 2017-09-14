@@ -1,0 +1,93 @@
+<?php
+/**
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2017 Thirty Development, LLC
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software
+ * is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * @author    Michael Dekker <michael@thirtybees.com>
+ * @copyright 2017 Thirty Development, LLC
+ * @license   https://opensource.org/licenses/MIT The MIT License
+ */
+
+namespace ThirtyBees\PostNL\Entity;
+
+/**
+ * Class Content
+ *
+ * @package ThirtyBees\PostNL\Entity
+ *
+ * @method string getCountryOfOrigin()
+ * @method string getDescription()
+ * @method string getHSTariffNr()
+ * @method string getQuantity()
+ * @method string getValue()
+ * @method string getWeight()
+ *
+ * @method Content setCountryOfOrigin(string $countryOfOrigin)
+ * @method Content setDescription(string $description)
+ * @method Content setHSTariffNr(string $hsTariffNr)
+ * @method Content setQuantity(string $qty)
+ * @method Content setValue(string $val)
+ * @method Content setWeight(string $weight)
+ */
+class Content extends AbstractEntity
+{
+    /** @var string[] $defaultProperties */
+    public static $defaultProperties = [
+        'CountryOfOrigin',
+        'Description',
+        'HSTariffNr',
+        'Quantity',
+        'Value',
+        'Weight',
+    ];
+    // @codingStandardsIgnoreStart
+    /** @var string $CountryOfOrigin */
+    protected $CountryOfOrigin = null;
+    /** @var string $Description */
+    protected $Description = null;
+    /** @var string $HSTariffNr */
+    protected $HSTariffNr = null;
+    /** @var string $Quantity */
+    protected $Quantity = null;
+    /** @var string $Value */
+    protected $Value = null;
+    /** @var string $Weight */
+    protected $Weight = null;
+    // @codingStandardsIgnoreEnd
+
+    /**
+     * @param string $countryOfOrigin
+     * @param string $description
+     * @param string $hsTariffNr
+     * @param string $qty
+     * @param string $val
+     * @param string $weight
+     */
+    public function __construct($countryOfOrigin, $description, $hsTariffNr, $qty, $val, $weight)
+    {
+        parent::__construct();
+
+        $this->setCountryOfOrigin($countryOfOrigin);
+        $this->setDescription($description);
+        $this->setHSTariffNr($hsTariffNr);
+        $this->setQuantity($qty);
+        $this->setValue($val);
+        $this->setWeight($weight);
+    }
+}
