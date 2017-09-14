@@ -63,7 +63,7 @@ class Message extends AbstractEntity
     {
         parent::__construct();
 
-        $this->setMessageID($mid ?: substr(str_replace('-', '', $this->getId()), 0, 12));
+        $this->setMessageID($mid ?: substr(str_replace('-', '', $this->getid()), 0, 12));
         $this->setMessageTimeStamp($timestamp ?: (new DateTime())->format('d-m-Y H:i:s'));
     }
 }
