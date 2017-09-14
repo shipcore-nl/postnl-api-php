@@ -9,8 +9,8 @@ The library is still a work-in-progress, but the Barcode, Labelling and Confirmi
 
 ## Instructions
 - Clone this repo
-- Optionally run `composer install guzzlehttp/guzzle` to use Guzzle instead of cURL directly
-- Run `composer -o dump-autoload` (Don't have composer? Visit https://getcomposer.org/)
+- Optionally run `composer require guzzlehttp/guzzle` to use Guzzle instead of cURL directly
+- Run `composer install` (Don't have composer? Visit https://getcomposer.org/)
 - You're good to go! A few small examples can be found in this README.
 
 ## Example
