@@ -1,5 +1,18 @@
 # PostNL REST API PHP Bindings
 
+## About
+This PHP library for PostNL's REST API aims to provide a simple way to connect your application with PostNL. By abstracting away needless complexity when processing shipment information and increased fault-tolerance, you can get up and running with PostNL in minutes. At the lower level this library uses asynchronous communication and payload splitting for improved performance.
+
+## Important notice
+The PHP bindings connect to PostNL's REST API.  
+The library is still a work-in-progress, but the Barcode, Labelling and Confirming will hopefully be completed soon.
+
+## Instructions
+- Clone this repo
+- Optionally run `composer install guzzlehttp/guzzle` to use Guzzle instead of cURL directly
+- Run `composer -o dump-autoload` (Don't have composer? Visit https://getcomposer.org/)
+- You're good to go! A few small examples can be found in this README.
+
 ## Example
 Creating a label
 
