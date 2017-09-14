@@ -34,9 +34,9 @@ use ThirtyBees\PostNL\Util\UUID;
  *
  * @package ThirtyBees\PostNL\Entity
  *
- * @method string getId()
+ * @method string getid()
  *
- * @method static setId(string $id)
+ * @method static setid(string $id)
  */
 abstract class AbstractEntity implements \JsonSerializable
 {
