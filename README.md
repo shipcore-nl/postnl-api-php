@@ -48,4 +48,4 @@ $labelRequest = new LabelRequest([
 $label = LabellingService::generateLabel($labelRequest);
 
 var_dump($label);die();
-```php
+```
