@@ -10,7 +10,9 @@
             "email": "michael@thirtybees.com"
         }
     ],
-    "require": {},
+    "require": {
+        "ext-curl": "*"
+    },
     "autoload": {
         "psr-4": {
             "ThirtyBees\\PostNL\\": ""
