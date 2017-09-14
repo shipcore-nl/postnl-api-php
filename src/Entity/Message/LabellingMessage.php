@@ -57,7 +57,7 @@ class LabellingMessage extends Message
      * @param string $mid
      * @param string $timestamp
      */
-    public function __construct($printerType = 'GraphicFile|PDF', $mid = '1', $timestamp = null)
+    public function __construct($printerType = 'GraphicFile|PDF', $mid = null, $timestamp = null)
     {
         parent::__construct($mid, $timestamp);
 
