@@ -1,11 +1,16 @@
 # PostNL REST API PHP Bindings
 
 ## About
-This PHP library for PostNL's REST API aims to provide a simple way to connect your application with PostNL. By abstracting away needless complexity when processing shipment information and increased fault-tolerance, you can get up and running with PostNL in minutes. At the lower level this library uses asynchronous communication and payload splitting for improved performance.
+This PHP library for both PostNL's SOAP and REST API aims to provide a simple way to connect your 
+application with PostNL. By abstracting away needless complexity when processing shipment 
+information and increased fault-tolerance, you can get up and running with PostNL in minutes.  
+At the lower level this library uses asynchronous communication and payload splitting for 
+improved performance.
 
 ## Important notice
-The PHP bindings connect to PostNL's REST API.  
-The library is still a work-in-progress, but the Barcode, Labelling and Confirming will hopefully be completed soon.
+The PHP bindings can connect to both PostNL's SOAP and REST API.  
+The library is still a work-in-progress, but the Barcode, Labelling and Confirming will 
+hopefully be completed soon.
 
 ## Instructions
 - Clone this repo
