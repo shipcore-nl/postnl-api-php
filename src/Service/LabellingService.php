@@ -26,8 +26,10 @@
 
 namespace ThirtyBees\PostNL\Service;
 
+use ThirtyBees\PostNL\Entity\SOAP\Security;
 use ThirtyBees\PostNL\PostNL;
 use ThirtyBees\PostNL\Entity\Request\GenerateLabel;
+use ThirtyBees\PostNL\Util\PostNLXmlService;
 
 /**
  * Class LabellingService
@@ -41,13 +43,26 @@ class LabellingService extends AbstractService
 
     // Endpoints
     const LIVE_ENDPOINT = 'https://api.postnl.nl/shipment/v2_1/label';
-    const SANDBOX_ENDPOINT = 'https://api-sandbox.postnl.nl/shipment/v2_1/label';
+//    const SANDBOX_ENDPOINT = 'https://api-sandbox.postnl.nl/shipment/v2_1/label';
+    const SANDBOX_ENDPOINT = 'https://testservice.postnl.com/CIF_SB/LabellingWebService/2_1/LabellingWebService.svc';
 
     // SOAP API
     const SOAP_ACTION = 'http://postnl.nl/cif/services/LabellingWebService/ILabellingWebService/GenerateLabel';
     const ENVELOPE_NAMESPACE = 'http://schemas.xmlsoap.org/soap/envelope/';
     const SERVICES_NAMESPACE = 'http://postnl.nl/cif/services/LabellingWebService/';
     const DOMAIN_NAMESPACE = 'http://postnl.nl/cif/domain/LabellingWebService/';
+
+    /**
+     * Namespaces uses for the SOAP version of this service
+     *
+     * @var array $namespaces
+     */
+    public static $namespaces = [
+        self::ENVELOPE_NAMESPACE     => 'SOAP-ENV',
+        self::SERVICES_NAMESPACE     => 'bar',
+        self::DOMAIN_NAMESPACE       => 'bar1',
+        Security::SECURITY_NAMESPACE => 'wsse',
+    ];
 
     /**
      * Generate a single barcode
@@ -59,11 +74,24 @@ class LabellingService extends AbstractService
      */
     public static function generateLabel(GenerateLabel $request, $confirm = false)
     {
-
+        // TODO: make it try with the other method if one fails
+        return (PostNL::getCurrentMode() === PostNL::MODE_REST
+            ? static::generateLabelREST($request, $confirm)
+            : static::generateLabelSOAP($request, $confirm));
     }
 
+    /**
+     * Generate a single barcode via REST
+     *
+     * @param GenerateLabel $request
+     * @param bool          $confirm
+     *
+     * @return array
+     */
     protected static function generateLabelREST(GenerateLabel $request, $confirm = false)
     {
+        var_dump(json_encode($request));exit;
+
         $client = PostNL::getHttpClient();
         $apiKey = PostNL::getRestApiKey();
 
@@ -82,32 +110,58 @@ class LabellingService extends AbstractService
         );
 
         // FIXME
-        return $result;
+        return $result[0];
     }
 
-    protected static function generateLabelSOAP(GenerateLabel $request, $confirm = false)
+    /**
+     * Generate a single label via SOAP
+     *
+     * @param GenerateLabel $generateLabel
+     * @param bool          $confirm
+     *
+     * @return string
+     */
+    protected static function generateLabelSOAP(GenerateLabel $generateLabel, $confirm = false)
     {
-        $client = PostNL::getHttpClient();
-        $apiKey = PostNL::getRestApiKey();
+        $soapAction = static::SOAP_ACTION;
+        $xmlService = new PostNLXmlService();
+        foreach (static::$namespaces as $namespace => $prefix) {
+            $xmlService->namespaceMap[$namespace] = $prefix;
+        }
+        $xmlService->setService('Labelling');
 
+        $request = $xmlService->write(
+            '{'.static::ENVELOPE_NAMESPACE.'}Envelope',
+            [
+                '{'.static::ENVELOPE_NAMESPACE.'}Header' => [
+                    ['{'.Security::SECURITY_NAMESPACE.'}Security' => new Security(PostNL::getSoapUsernameToken())],
+                ],
+                '{'.static::ENVELOPE_NAMESPACE.'}Body'   => [
+                    '{'.static::SERVICES_NAMESPACE.'}GenerateLabel' => $generateLabel,
+                ],
+            ]
+        );
+        file_put_contents(__DIR__.'/../../request.xml', $request);
 
-        $request->currentService = 'Labelling';
-
-        $result = $client->request(
+        $result =  PostNL::getHttpClient()->request(
             'POST',
             PostNL::getSandbox() ? static::SANDBOX_ENDPOINT : static::LIVE_ENDPOINT,
             [
-                "apikey: $apiKey",
-                'Content-Type: application/json',
-                'Accept: application/json',
+                "SOAPAction: \"$soapAction\"",
+                'Content-Type: text/xml',
+                'Accept: text/xml',
             ],
-            [
-                'confirm' => $confirm,
-            ],
-            json_encode($request)
+            [],
+            $request
         );
+        file_put_contents(__DIR__.'/../../response.xml', $result[0]);
 
-        // FIXME
-        return $result;
+        $xml = simplexml_load_string($result[0]);
+        foreach (static::$namespaces as $namespace => $prefix) {
+            $xml->registerXPathNamespace($prefix, $namespace);
+        }
+
+        // FIXME: should not return the raw result
+        return (string) $xml->xpath('//bar1:Content')[0][0];
     }
 }

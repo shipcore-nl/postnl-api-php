@@ -26,6 +26,7 @@
 
 namespace ThirtyBees\PostNL\Entity;
 
+use Sabre\Xml\Writer;
 use ThirtyBees\PostNL\Service\BarcodeService;
 use ThirtyBees\PostNL\Service\ConfirmingService;
 use ThirtyBees\PostNL\Service\LabellingService;
@@ -401,5 +402,31 @@ class Shipment extends AbstractEntity
         $this->setRemark($remark);
         $this->setReturnBarcode($returnBarcode);
         $this->setReturnReference($returnReference);
+    }
+
+    /**
+     * Return a serializable array for the XMLWriter
+     *
+     * @param Writer $writer
+     *
+     * @return void
+     */
+    public function xmlSerialize(Writer $writer)
+    {
+        $xml = [];
+        foreach (static::$defaultProperties as $propertyName => $namespace) {
+            $namespace = isset(static::$defaultProperties[$propertyName][$writer->service]) ? static::$defaultProperties[$propertyName][$writer->service] : '';
+            if ($propertyName === 'Addresses') {
+                $shipments = [];
+                foreach ($this->Addresses as $address) {
+                    $shipments[] = ["{{$namespace}}Address" => $address];
+                }
+                $xml["{{$namespace}}Addresses"] = $shipments;
+            } elseif (!is_null($this->{$propertyName})) {
+                $xml[$namespace ? "{{$namespace}}{$propertyName}" : $propertyName] = $this->{$propertyName};
+            }
+        }
+        // Auto extending this object with other properties is not supported with SOAP
+        $writer->write($xml);
     }
 }

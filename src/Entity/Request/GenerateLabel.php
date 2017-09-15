@@ -26,6 +26,7 @@
 
 namespace ThirtyBees\PostNL\Entity\Request;
 
+use Sabre\Xml\Writer;
 use ThirtyBees\PostNL\Entity\AbstractEntity;
 use ThirtyBees\PostNL\Entity\Customer;
 use ThirtyBees\PostNL\Entity\Message\LabellingMessage;
@@ -96,5 +97,31 @@ class GenerateLabel extends AbstractEntity
         $this->setShipments($shipments);
         $this->setMessage($message ?: new LabellingMessage());
         $this->setCustomer($customer ?: PostNL::getCustomer());
+    }
+
+    /**
+     * Return a serializable array for the XMLWriter
+     *
+     * @param Writer $writer
+     *
+     * @return void
+     */
+    public function xmlSerialize(Writer $writer)
+    {
+        $xml = [];
+        foreach (static::$defaultProperties as $propertyName => $namespace) {
+            $namespace = isset(static::$defaultProperties[$propertyName][$writer->service]) ? static::$defaultProperties[$propertyName][$writer->service] : '';
+            if ($propertyName === 'Shipments') {
+                $shipments = [];
+                foreach ($this->Shipments as $shipment) {
+                    $shipments[] = ["{{$namespace}}Shipment" => $shipment];
+                }
+                $xml["{{$namespace}}Shipments"] = $shipments;
+            } elseif (!is_null($this->{$propertyName})) {
+                $xml[$namespace ? "{{$namespace}}{$propertyName}" : $propertyName] = $this->{$propertyName};
+            }
+        }
+        // Auto extending this object with other properties is not supported with SOAP
+        $writer->write($xml);
     }
 }
