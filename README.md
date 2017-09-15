@@ -12,6 +12,34 @@ The PHP bindings can connect to both PostNL's SOAP and REST API.
 The library is still a work-in-progress, but the Barcode, Labelling and Confirming will 
 hopefully be completed soon.
 
+### Status
+| Service                                     | Status REST              | Status SOAP               | Version |
+| ------------------------------------------- | ------------------------ | -----------------         | ------- |
+| **Addresses**                               |                          |                           |         |
+| Adrescheck Nationaal                        | N/A                      | N/A                       | N/A     |
+| Adrescheck Basis Nationaal                  | N/A                      | N/A                       | N/A     |
+| Adrescheck Internationaal                   | N/A                      | N/A                       | N/A     |
+| Persoon op AdresCheck Basis                 | N/A                      | N/A                       | N/A     |
+| Geo Adrescheck Nationaal                    | N/A                      | N/A                       | N/A     |
+| **Creditworthiness & Business information** |                          |                           |         |
+| Bedrijfscheck Nationaal                     | N/A                      | N/A                       | N/A     |
+| IBANcheck Nationaal                         | N/A                      | N/A                       | N/A     |
+| Kredietcheck Consument Basis                | N/A                      | N/A                       | N/A     |
+| Kredietcheck Consument Premium              | N/A                      | N/A                       | N/A     |
+| Fraudepreventie Check Basis                 | N/A                      | N/A                       | N/A     |
+| Kredietcheck Zakelijk                       | N/A                      | N/A                       | N/A     |
+| **Send & Track**                            |                          |                           |         |
+| Barcode webservice                          | Expected: October, 2017  | alpha                     | 1.1     |
+| Labelling webservice                        | Expected: October, 2017  | alpha                     | 2.1     |
+| Confirming webservice                       | Expected: October, 2017  | Expected: September, 2017 | 1.10    |
+| Shippingstatus webservice                   | Expected: October, 2017  | Expected: September, 2017 | 1.6     |
+| **Delivery Options**                        |                          |                           |         |
+| Deliverydate webservice                     | Expected: October, 2017  | Expected: September, 2017 | 2.2     |
+| Location webservice                         | Expected: October, 2017  | Expected: September, 2017 | 2.1     |
+| Timeframe webservice                        | Expected: October, 2017  | Expected: September, 2017 | 2.1     |
+| **Mail**                                    |                          |                           |         |
+| Bulkmail webservice                         | N/A                      | N/A                       | N/A     |
+
 ## Instructions
 - Clone this repo
 - Optionally run `composer require guzzlehttp/guzzle` to use Guzzle instead of cURL directly
