@@ -24,65 +24,33 @@
  * @license   https://opensource.org/licenses/MIT The MIT License
  */
 
-namespace ThirtyBees\PostNL\Entity;
+namespace ThirtyBees\PostNL\Entity\SOAP;
 
+use ThirtyBees\PostNL\Entity\AbstractEntity;
+use ThirtyBees\PostNL\Entity\GenerateBarcodeResponse;
 use ThirtyBees\PostNL\Service\BarcodeService;
 use ThirtyBees\PostNL\Service\ConfirmingService;
 use ThirtyBees\PostNL\Service\LabellingService;
 
 /**
- * Class Barcode
+ * Class Body
+ *
+ * NOTE: this class has been introduced for deserializing
  *
  * @package ThirtyBees\PostNL\Entity
- *
- * @method string getType()
- * @method string getRange()
- * @method string getSerie()
- *
- * @method Barcode setType(string $type)
- * @method Barcode setRange(string $range)
- * @method Barcode setSerie(string $serie)
  */
-class Barcode extends AbstractEntity
+class Body extends AbstractEntity
 {
-    /** @var string[] $defaultProperties */
+    /** @var array $defaultProperties */
     public static $defaultProperties = [
-        'Type'  => [
-            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
-            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
-            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
-        ],
-        'Range' => [
-            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
-            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
-            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
-        ],
-        'Serie' => [
-            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
-            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
-            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        'GenerateBarcodeResponse'   => [
+            'Barcode'    => BarcodeService::ENVELOPE_NAMESPACE,
+            'Confirming' => ConfirmingService::ENVELOPE_NAMESPACE,
+            'Labelling'  => LabellingService::ENVELOPE_NAMESPACE,
         ],
     ];
     // @codingStandardsIgnoreStart
-    /** @var string $Type */
-    protected $Type = null;
-    /** @var string $Range */
-    protected $Range = null;
-    /** @var string $Serie */
-    protected $Serie = null;
+    /** @var GenerateBarcodeResponse $GenerateBarcodeResponse */
+    public $GenerateBarcodeResponse;
     // @codingStandardsIgnoreEnd
-
-    /**
-     * @param string $type
-     * @param string $range
-     * @param string $serie
-     */
-    public function __construct($type, $range, $serie = '000000000-999999999')
-    {
-        parent::__construct();
-
-        $this->setType($type);
-        $this->setRange($range);
-        $this->setSerie($serie);
-    }
 }

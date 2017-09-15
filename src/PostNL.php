@@ -27,6 +27,7 @@
 namespace ThirtyBees\PostNL;
 
 use ThirtyBees\PostNL\Entity\Customer;
+use ThirtyBees\PostNL\Entity\SOAP\UsernameToken;
 use ThirtyBees\PostNL\HttpClient\ClientInterface;
 use ThirtyBees\PostNL\HttpClient\CurlClient;
 use ThirtyBees\PostNL\HttpClient\GuzzleClient;
@@ -52,9 +53,15 @@ class PostNL
     /**
      * The PostNL REST API key to be used for requests.
      *
-     * @var string $apiKey
+     * @var string $restApiKey
      */
-    protected static $apiKey;
+    protected static $restApiKey;
+    /**
+     * The PostNL SOAP UsernameToken object to be used for requests.
+     *
+     * @var UsernameToken $soapUsernameToken
+     */
+    protected static $soapUsernameToken;
     /**
      * The PostNL Customer to be used for requests.
      *
@@ -80,36 +87,42 @@ class PostNL
      *
      * @var int $currentMode
      */
-    protected static $currentMode = self::MODE_REST_THEN_SOAP;
-
-    /**
-     * Set API Key
-     *
-     * @param string $key
-     */
-    public static function setApiKey($key)
-    {
-        static::$apiKey = $key;
-    }
+    protected static $currentMode = self::MODE_REST;
 
     /**
      * Get API Key
      *
      * @return string
      */
-    public static function getApiKey()
+    public static function getRestApiKey()
     {
-        return static::$apiKey;
+        return static::$restApiKey;
     }
 
     /**
-     * Set PostNL Customer
+     * Set API Key
      *
-     * @param Customer $customer
+     * @param string $key
      */
-    public static function setCustomer(Customer $customer)
+    public static function setRestApiKey($key)
     {
-        static::$customer = $customer;
+        static::$restApiKey = $key;
+    }
+
+    /**
+     * @param UsernameToken $token
+     */
+    public static function setSoapUsernameToken(UsernameToken $token)
+    {
+        static::$soapUsernameToken = $token;
+    }
+
+    /**
+     * @return UsernameToken
+     */
+    public static function getSoapUsernameToken()
+    {
+        return static::$soapUsernameToken;
     }
 
     /**
@@ -123,13 +136,13 @@ class PostNL
     }
 
     /**
-     * Set sandbox mode
+     * Set PostNL Customer
      *
-     * @param string $sandbox
+     * @param Customer $customer
      */
-    public static function setSandbox($sandbox)
+    public static function setCustomer(Customer $customer)
     {
-        static::$sandbox = (bool) $sandbox;
+        static::$customer = $customer;
     }
 
     /**
@@ -143,13 +156,77 @@ class PostNL
     }
 
     /**
-     * Set the HttpClient
+     * Set sandbox mode
      *
-     * @param ClientInterface $client
+     * @param string $sandbox
      */
-    public static function setHttpClient(ClientInterface $client)
+    public static function setSandbox($sandbox)
     {
-        static::$httpClient = $client;
+        static::$sandbox = (bool) $sandbox;
+    }
+
+    /**
+     * Get preferred mode
+     *
+     * @return int
+     */
+    public static function getPreferredMode()
+    {
+        return static::$sandbox;
+    }
+
+    /**
+     * Set preferred mode
+     *
+     * @param int $preferred
+     *
+     * @return bool Indicates whether the preferred mode has been successfully changed
+     */
+    public static function setPreferredMode($preferred)
+    {
+        if (!in_array($preferred, [
+            static::MODE_REST,
+            static::MODE_SOAP,
+            static::MODE_REST_THEN_SOAP,
+            static::MODE_SOAP_THEN_REST,
+        ])) {
+            return false;
+        }
+
+        static::$preferredMode = (int) $preferred;
+
+        return true;
+    }
+
+    /**
+     * Get the current mode
+     *
+     * @return int
+     */
+    public static function getCurrentMode()
+    {
+        return static::$currentMode;
+    }
+
+    /**
+     * Set sandbox mode
+     *
+     * @param int $current
+     *
+     * @return bool Indicates whether the current mode has been successfully changed
+     */
+    public static function setCurrentMode($current)
+    {
+        if (!in_array($current, [
+            static::MODE_REST,
+            static::MODE_SOAP,
+        ])) {
+            return false;
+        }
+
+        static::$currentMode = (int) $current;
+
+        return true;
     }
 
     /**
@@ -171,5 +248,15 @@ class PostNL
         }
 
         return static::$httpClient;
+    }
+
+    /**
+     * Set the HttpClient
+     *
+     * @param ClientInterface $client
+     */
+    public static function setHttpClient(ClientInterface $client)
+    {
+        static::$httpClient = $client;
     }
 }

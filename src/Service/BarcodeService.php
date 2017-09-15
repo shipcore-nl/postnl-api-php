@@ -26,8 +26,10 @@
 
 namespace ThirtyBees\PostNL\Service;
 
-use ThirtyBees\PostNL\Entity\Customer;
+use ThirtyBees\PostNL\Entity\Request\GenerateBarcode;
+use ThirtyBees\PostNL\Entity\SOAP\Security;
 use ThirtyBees\PostNL\PostNL;
+use ThirtyBees\PostNL\Util\PostNLXmlService;
 
 /**
  * Class BarcodeService
@@ -46,40 +48,109 @@ class BarcodeService extends AbstractService
     const DOMAIN_NAMESPACE = 'http://postnl.nl/cif/domain/BarcodeWebService/';
 
     /**
+     * Namespaces uses for the SOAP version of this service
+     *
+     * @var array $namespaces
+     */
+    public static $namespaces = [
+        self::ENVELOPE_NAMESPACE     => 'SOAP-ENV',
+        self::SERVICES_NAMESPACE     => 'bar',
+        self::DOMAIN_NAMESPACE       => 'bar1',
+        Security::SECURITY_NAMESPACE => 'wsse',
+    ];
+
+    /**
      * Generate a single barcode
      *
-     * @param Customer|null $customer
+     * @param GenerateBarcode $generateBarcode
      *
      * @return string Barcode
      */
-    public static function generateBarcode($customer = null)
+    public static function generateBarcode(GenerateBarcode $generateBarcode)
     {
-        if (!$customer instanceof Customer) {
-            $customer = PostNL::getCustomer();
-        }
+        // TODO: make it try with the other method if one fails
+        return (PostNL::getCurrentMode() === PostNL::MODE_REST
+            ? static::generateBarcodeREST($generateBarcode)
+            : static::generateBarcodeSOAP($generateBarcode));
+    }
 
-        $apiKey = PostNL::getApiKey();
+    /**
+     * Generate a single barcode
+     *
+     * @param GenerateBarcode $generateBarcode
+     *
+     * @return string Barcode
+     */
+    public static function generateBarcodeREST(GenerateBarcode $generateBarcode)
+    {
+        $apiKey = PostNL::getRestApiKey();
 
         $result =  PostNL::getHttpClient()->request(
             'GET',
             PostNL::getSandbox() ? static::SANDBOX_ENDPOINT : static::LIVE_ENDPOINT,
             [
+                'Content-Type: application/json; charset=utf-8',
+                'Accept: application/json',
                 "apikey: $apiKey",
             ],
             [
-                'CustomerCode'   => $customer->getCustomerCode(),
-                'CustomerNumber' => $customer->getCustomerNumber(),
-                'Type'           => '3S',
-                'Serie'          => '000000000-999999999',
+                'CustomerCode'   => $generateBarcode->getCustomer()->getCustomerCode(),
+                'CustomerNumber' => $generateBarcode->getCustomer()->getCustomerNumber(),
+                'Type'           => $generateBarcode->getBarcode()->getType(),
+                'Serie'          => $generateBarcode->getBarcode()->getSerie(),
             ]
         );
 
-        // FIXME: Do some error checking here
         return json_decode($result[0], true)['Barcode'];
     }
 
-    protected static function setNamespaces()
+    /**
+     * Generate a single barcode
+     *
+     * @param GenerateBarcode $generateBarcode
+     *
+     * @return string Barcode
+     */
+    public static function generateBarcodeSOAP(GenerateBarcode $generateBarcode)
     {
+        $soapAction = static::SOAP_ACTION;
+        $xmlService = new PostNLXmlService();
+        foreach (static::$namespaces as $namespace => $prefix) {
+            $xmlService->namespaceMap[$namespace] = $prefix;
+        }
 
+
+        $xmlService->setService('Barcode');
+
+        $request = $xmlService->write(
+            '{'.static::ENVELOPE_NAMESPACE.'}Envelope',
+            [
+                '{'.static::ENVELOPE_NAMESPACE.'}Header' => [
+                    ['{'.Security::SECURITY_NAMESPACE.'}Security' => new Security(PostNL::getSoapUsernameToken())],
+                ],
+                '{'.static::ENVELOPE_NAMESPACE.'}Body'   => [
+                    '{'.static::SERVICES_NAMESPACE.'}GenerateBarcode' => $generateBarcode,
+                ],
+            ]
+        );
+
+        $result =  PostNL::getHttpClient()->request(
+            'POST',
+            PostNL::getSandbox() ? static::SANDBOX_ENDPOINT : static::LIVE_ENDPOINT,
+            [
+                "SOAPAction: \"$soapAction\"",
+                'Content-Type: text/xml',
+                'Accept: text/xml',
+            ],
+            [],
+            $request
+        );
+
+        $xml = simplexml_load_string($result[0]);
+        foreach (static::$namespaces as $namespace => $prefix) {
+            $xml->registerXPathNamespace($prefix, $namespace);
+        }
+
+        return (string) $xml->xpath('//bar:GenerateBarcodeResponse/bar1:Barcode')[0][0];
     }
 }

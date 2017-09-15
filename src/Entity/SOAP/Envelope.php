@@ -24,65 +24,67 @@
  * @license   https://opensource.org/licenses/MIT The MIT License
  */
 
-namespace ThirtyBees\PostNL\Entity;
+namespace ThirtyBees\PostNL\Entity\SOAP;
 
+use ThirtyBees\PostNL\Entity\AbstractEntity;
 use ThirtyBees\PostNL\Service\BarcodeService;
 use ThirtyBees\PostNL\Service\ConfirmingService;
 use ThirtyBees\PostNL\Service\LabellingService;
 
 /**
- * Class Barcode
+ * Class GenerateLabel
  *
  * @package ThirtyBees\PostNL\Entity
  *
- * @method string getType()
- * @method string getRange()
- * @method string getSerie()
+ * @method Header getHeader()
+ * @method Body   getBody()
  *
- * @method Barcode setType(string $type)
- * @method Barcode setRange(string $range)
- * @method Barcode setSerie(string $serie)
+ * @method Envelope setHeader(Header $header)
+ * @method Envelope setBody(Body $body)
+ *
+ * NOTE: this class has been introduced for deserializing
  */
-class Barcode extends AbstractEntity
+class Envelope extends AbstractEntity
 {
-    /** @var string[] $defaultProperties */
+    /**
+     * Default properties and namespaces for the SOAP API
+     *
+     * @var array $defaultProperties
+     */
     public static $defaultProperties = [
-        'Type'  => [
-            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
-            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
-            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        'Header'   => [
+            'Barcode'    => BarcodeService::ENVELOPE_NAMESPACE,
+            'Confirming' => ConfirmingService::ENVELOPE_NAMESPACE,
+            'Labelling'  => LabellingService::ENVELOPE_NAMESPACE,
         ],
-        'Range' => [
-            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
-            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
-            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
-        ],
-        'Serie' => [
-            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
-            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
-            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        'Body'   => [
+            'Barcode'    => BarcodeService::ENVELOPE_NAMESPACE,
+            'Confirming' => ConfirmingService::ENVELOPE_NAMESPACE,
+            'Labelling'  => LabellingService::ENVELOPE_NAMESPACE,
         ],
     ];
     // @codingStandardsIgnoreStart
-    /** @var string $Type */
-    protected $Type = null;
-    /** @var string $Range */
-    protected $Range = null;
-    /** @var string $Serie */
-    protected $Serie = null;
+    /** @var Header $Header */
+    public $Header;
+    /** @var Body $Body */
+    public $Body;
     // @codingStandardsIgnoreEnd
 
     /**
-     * @param string $type
-     * @param string $range
-     * @param string $serie
+     * LabelRequest constructor.
+     *
+     * @param Header $header
+     * @param Body   $body
      */
-    public function __construct($type, $range, $serie = '000000000-999999999')
+    public function __construct(Header $header = null, Body $body = null)
     {
         parent::__construct();
 
-        $this->setType($type);
-        $this->setRange($range);
-        $this->setSerie($serie);
+        if ($header) {
+            $this->setHeader($header);
+        }
+        if ($body) {
+            $this->setBody($body);
+        }
     }
 }

@@ -27,9 +27,6 @@
 namespace ThirtyBees\PostNL\Entity\SOAP;
 
 use ThirtyBees\PostNL\Entity\AbstractEntity;
-use ThirtyBees\PostNL\Service\BarcodeService;
-use ThirtyBees\PostNL\Service\ConfirmingService;
-use ThirtyBees\PostNL\Service\LabellingService;
 
 /**
  * Class Security
@@ -42,16 +39,30 @@ use ThirtyBees\PostNL\Service\LabellingService;
  */
 class Security extends AbstractEntity
 {
+    const SECURITY_NAMESPACE = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd';
+
     /** @var string[] $defaultProperties */
     public static $defaultProperties = [
         'UsernameToken' => [
-            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
-            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
-            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+            'Barcode'    => self::SECURITY_NAMESPACE,
+            'Confirming' => self::SECURITY_NAMESPACE,
+            'Labelling'  => self::SECURITY_NAMESPACE,
         ],
     ];
     // @codingStandardsIgnoreStart
-    /** @var UserNameToken $UsernameToken */
+    /** @var UsernameToken $UsernameToken */
     public $UsernameToken;
     // @codingStandardsIgnoreEnd
+
+    /**
+     * Security constructor.
+     *
+     * @param UsernameToken $token
+     */
+    public function __construct(UsernameToken $token)
+    {
+        parent::__construct();
+
+        $this->setUsernameToken($token);
+    }
 }

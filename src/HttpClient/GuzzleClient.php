@@ -215,7 +215,6 @@ class GuzzleClient implements ClientInterface
                 $headers
             );
         } catch (\Exception $e) {
-            var_dump($e);
             throw new ApiConnectionException('Could not connect with PostNL');
         }
 

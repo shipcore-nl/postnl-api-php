@@ -24,65 +24,76 @@
  * @license   https://opensource.org/licenses/MIT The MIT License
  */
 
-namespace ThirtyBees\PostNL\Entity;
+namespace ThirtyBees\PostNL\Entity\Request;
 
+use ThirtyBees\PostNL\Entity\AbstractEntity;
+use ThirtyBees\PostNL\Entity\Barcode;
+use ThirtyBees\PostNL\Entity\Customer;
+use ThirtyBees\PostNL\Entity\Message\Message;
+use ThirtyBees\PostNL\PostNL;
 use ThirtyBees\PostNL\Service\BarcodeService;
 use ThirtyBees\PostNL\Service\ConfirmingService;
 use ThirtyBees\PostNL\Service\LabellingService;
 
 /**
- * Class Barcode
+ * Class GenerateLabel
  *
  * @package ThirtyBees\PostNL\Entity
  *
- * @method string getType()
- * @method string getRange()
- * @method string getSerie()
+ * @method Customer getCustomer()
+ * @method Message  getMessage()
+ * @method Barcode  getBarcode()
  *
- * @method Barcode setType(string $type)
- * @method Barcode setRange(string $range)
- * @method Barcode setSerie(string $serie)
+ * @method GenerateBarcode setCustomer(Customer $customer)
+ * @method GenerateBarcode setMessage(Message $message)
+ * @method GenerateBarcode setBarcode(Barcode $shipments)
  */
-class Barcode extends AbstractEntity
+class GenerateBarcode extends AbstractEntity
 {
-    /** @var string[] $defaultProperties */
+    /**
+     * Default properties and namespaces for the SOAP API
+     *
+     * @var array $defaultProperties
+     */
     public static $defaultProperties = [
-        'Type'  => [
+        'Message'   => [
             'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
             'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
             'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
         ],
-        'Range' => [
+        'Customer'  => [
             'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
             'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
             'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
         ],
-        'Serie' => [
+        'Barcode' => [
             'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
             'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
             'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
         ],
     ];
     // @codingStandardsIgnoreStart
-    /** @var string $Type */
-    protected $Type = null;
-    /** @var string $Range */
-    protected $Range = null;
-    /** @var string $Serie */
-    protected $Serie = null;
+    /** @var Message $Message */
+    public $Message;
+    /** @var Customer $Customer */
+    public $Customer;
+    /** @var Barcode $Barcode */
+    public $Barcode;
     // @codingStandardsIgnoreEnd
 
     /**
-     * @param string $type
-     * @param string $range
-     * @param string $serie
+     * LabelRequest constructor.
+     *
+     * @param Barcode  $barcode
+     * @param Message  $message
+     * @param Customer $customer
      */
-    public function __construct($type, $range, $serie = '000000000-999999999')
+    public function __construct(Barcode $barcode, Message $message = null, Customer $customer = null)
     {
         parent::__construct();
 
-        $this->setType($type);
-        $this->setRange($range);
-        $this->setSerie($serie);
+        $this->setBarcode($barcode);
+        $this->setMessage($message ?: new Message());
+        $this->setCustomer($customer ?: PostNL::getCustomer());
     }
 }

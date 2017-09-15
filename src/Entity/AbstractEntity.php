@@ -161,9 +161,6 @@ abstract class AbstractEntity implements \JsonSerializable, XmlSerializable
             }
         }
         // Auto extending this object with other properties is not supported with SOAP
-//        var_dump($xml);die();
-
-        file_put_contents(__DIR__.'/../../arraydump.txt', json_encode($xml, JSON_PRETTY_PRINT + JSON_UNESCAPED_SLASHES));
 
         $writer->write($xml);
     }

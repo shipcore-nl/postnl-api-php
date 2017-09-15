@@ -27,7 +27,7 @@
 namespace ThirtyBees\PostNL\Service;
 
 use ThirtyBees\PostNL\PostNL;
-use ThirtyBees\PostNL\Entity\GenerateLabel;
+use ThirtyBees\PostNL\Entity\Request\GenerateLabel;
 
 /**
  * Class LabellingService
@@ -65,7 +65,7 @@ class LabellingService extends AbstractService
     protected static function generateLabelREST(GenerateLabel $request, $confirm = false)
     {
         $client = PostNL::getHttpClient();
-        $apiKey = PostNL::getApiKey();
+        $apiKey = PostNL::getRestApiKey();
 
         $result = $client->request(
             'POST',
@@ -88,7 +88,7 @@ class LabellingService extends AbstractService
     protected static function generateLabelSOAP(GenerateLabel $request, $confirm = false)
     {
         $client = PostNL::getHttpClient();
-        $apiKey = PostNL::getApiKey();
+        $apiKey = PostNL::getRestApiKey();
 
 
         $request->currentService = 'Labelling';

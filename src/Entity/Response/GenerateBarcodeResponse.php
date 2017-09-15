@@ -26,63 +26,50 @@
 
 namespace ThirtyBees\PostNL\Entity;
 
+use function Sabre\Xml\Deserializer\valueObject;
+use Sabre\Xml\Element\KeyValue;
+use Sabre\Xml\Reader;
 use ThirtyBees\PostNL\Service\BarcodeService;
 use ThirtyBees\PostNL\Service\ConfirmingService;
 use ThirtyBees\PostNL\Service\LabellingService;
 
 /**
- * Class Barcode
+ * Class GenerateBarcodeResponse
  *
  * @package ThirtyBees\PostNL\Entity
  *
- * @method string getType()
- * @method string getRange()
- * @method string getSerie()
+ * @method string getBarcode()
  *
- * @method Barcode setType(string $type)
- * @method Barcode setRange(string $range)
- * @method Barcode setSerie(string $serie)
+ * @method GenerateBarcodeResponse setBarcode(string $shipments)
  */
-class Barcode extends AbstractEntity
+class GenerateBarcodeResponse extends AbstractEntity
 {
-    /** @var string[] $defaultProperties */
+    /**
+     * Default properties and namespaces for the SOAP API
+     *
+     * @var array $defaultProperties
+     */
     public static $defaultProperties = [
-        'Type'  => [
-            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
-            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
-            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
-        ],
-        'Range' => [
-            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
-            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
-            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
-        ],
-        'Serie' => [
+        'Barcode' => [
             'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
             'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
             'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
         ],
     ];
     // @codingStandardsIgnoreStart
-    /** @var string $Type */
-    protected $Type = null;
-    /** @var string $Range */
-    protected $Range = null;
-    /** @var string $Serie */
-    protected $Serie = null;
+    /** @var string $Barcode */
+    public $Barcode;
     // @codingStandardsIgnoreEnd
 
     /**
-     * @param string $type
-     * @param string $range
-     * @param string $serie
+     * LabelRequest constructor.
+     *
+     * @param string $barcode
      */
-    public function __construct($type, $range, $serie = '000000000-999999999')
+    public function __construct($barcode)
     {
         parent::__construct();
 
-        $this->setType($type);
-        $this->setRange($range);
-        $this->setSerie($serie);
+        $this->setBarcode($barcode);
     }
 }

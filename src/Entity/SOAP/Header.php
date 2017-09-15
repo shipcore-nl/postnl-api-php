@@ -27,43 +27,14 @@
 namespace ThirtyBees\PostNL\Entity\SOAP;
 
 use ThirtyBees\PostNL\Entity\AbstractEntity;
-use ThirtyBees\PostNL\Service\BarcodeService;
-use ThirtyBees\PostNL\Service\ConfirmingService;
-use ThirtyBees\PostNL\Service\LabellingService;
 
 /**
- * Class UsernameToken
+ * Class Header
  *
- * @package ThirtyBees\PostNL\Entity\SOAP
+ * NOTE: this class has been introduced for deserializing
  *
- * @method string getPassword()
- *
- * @method UsernameToken setPassword(string $password)
+ * @package ThirtyBees\PostNL\Entity
  */
-class UsernameToken extends AbstractEntity
+class Header extends AbstractEntity
 {
-    /** @var string[] $defaultProperties */
-    public static $defaultProperties = [
-        'Password' => [
-            'Barcode'    => Security::SECURITY_NAMESPACE,
-            'Confirming' => Security::SECURITY_NAMESPACE,
-            'Labelling'  => Security::SECURITY_NAMESPACE,
-        ],
-    ];
-    // @codingStandardsIgnoreStart
-    /** @var string $Password */
-    public $Password;
-    // @codingStandardsIgnoreEnd
-
-    /**
-     * UsernameToken constructor.
-     *
-     * @param string $apiKey
-     */
-    public function __construct($apiKey)
-    {
-        parent::__construct();
-
-        $this->setPassword($apiKey);
-    }
 }

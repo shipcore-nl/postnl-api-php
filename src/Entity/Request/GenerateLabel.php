@@ -24,10 +24,13 @@
  * @license   https://opensource.org/licenses/MIT The MIT License
  */
 
-namespace ThirtyBees\PostNL\Entity;
+namespace ThirtyBees\PostNL\Entity\Request;
 
+use ThirtyBees\PostNL\Entity\AbstractEntity;
+use ThirtyBees\PostNL\Entity\Customer;
 use ThirtyBees\PostNL\Entity\Message\LabellingMessage;
 use ThirtyBees\PostNL\Entity\Message\Message;
+use ThirtyBees\PostNL\Entity\Shipment;
 use ThirtyBees\PostNL\PostNL;
 use ThirtyBees\PostNL\Service\BarcodeService;
 use ThirtyBees\PostNL\Service\ConfirmingService;
