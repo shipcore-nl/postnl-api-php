@@ -36,14 +36,21 @@ use ThirtyBees\PostNL\Service\LabellingService;
  *
  * @package ThirtyBees\PostNL\Entity\SOAP
  *
+ * @method string getUsername()
  * @method string getPassword()
  *
+ * @method UsernameToken setUsername(string $username)
  * @method UsernameToken setPassword(string $password)
  */
 class UsernameToken extends AbstractEntity
 {
     /** @var string[] $defaultProperties */
     public static $defaultProperties = [
+        'Username' => [
+            'Barcode'    => Security::SECURITY_NAMESPACE,
+            'Confirming' => Security::SECURITY_NAMESPACE,
+            'Labelling'  => Security::SECURITY_NAMESPACE,
+        ],
         'Password' => [
             'Barcode'    => Security::SECURITY_NAMESPACE,
             'Confirming' => Security::SECURITY_NAMESPACE,
@@ -51,6 +58,8 @@ class UsernameToken extends AbstractEntity
         ],
     ];
     // @codingStandardsIgnoreStart
+    /** @var string $Username */
+    public $Username;
     /** @var string $Password */
     public $Password;
     // @codingStandardsIgnoreEnd
@@ -58,12 +67,14 @@ class UsernameToken extends AbstractEntity
     /**
      * UsernameToken constructor.
      *
-     * @param string $apiKey
+     * @param string $username
+     * @param string $password Plaintext password
      */
-    public function __construct($apiKey)
+    public function __construct($username, $password)
     {
         parent::__construct();
 
-        $this->setPassword($apiKey);
+        $this->setUsername($username);
+        $this->setPassword($password);
     }
 }
