@@ -38,6 +38,11 @@ use ThirtyBees\PostNL\HttpClient\GuzzleClient;
  */
 class PostNL
 {
+    const MODE_REST = 1;
+    const MODE_SOAP = 2;
+    const MODE_REST_THEN_SOAP = 3;
+    const MODE_SOAP_THEN_REST = 4;
+
     /**
      * Verify SSL certificate of the PostNL REST API
      *
@@ -64,6 +69,18 @@ class PostNL
     protected static $sandbox = false;
     /** @var ClientInterface $httpClient */
     protected static $httpClient;
+    /**
+     * Set the preferred mode
+     *
+     * @var int $preferredMode
+     */
+    protected static $preferredMode = self::MODE_REST_THEN_SOAP;
+    /**
+     * This is the current mode
+     *
+     * @var int $currentMode
+     */
+    protected static $currentMode = self::MODE_REST_THEN_SOAP;
 
     /**
      * Set API Key

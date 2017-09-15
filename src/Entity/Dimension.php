@@ -26,6 +26,10 @@
 
 namespace ThirtyBees\PostNL\Entity;
 
+use ThirtyBees\PostNL\Service\BarcodeService;
+use ThirtyBees\PostNL\Service\ConfirmingService;
+use ThirtyBees\PostNL\Service\LabellingService;
+
 /**
  * Class Dimension
  *
@@ -47,11 +51,31 @@ class Dimension extends AbstractEntity
 {
     /** @var string[] $defaultProperties */
     public static $defaultProperties = [
-        'Height',
-        'Length',
-        'Volume',
-        'Weight',
-        'Width',
+        'Height' => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
+        'Length' => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
+        'Volume' => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
+        'Weight' => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
+        'Width'  => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
     ];
     // @codingStandardsIgnoreStart
     /** @var string $Height */

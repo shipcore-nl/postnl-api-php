@@ -26,6 +26,11 @@
 
 namespace ThirtyBees\PostNL\Entity;
 
+use Sabre\Xml\Writer;
+use ThirtyBees\PostNL\Service\BarcodeService;
+use ThirtyBees\PostNL\Service\ConfirmingService;
+use ThirtyBees\PostNL\Service\LabellingService;
+
 /**
  * Class Customer
  *
@@ -51,13 +56,41 @@ class Customer extends AbstractEntity
 {
     /** @var string[] $defaultProperties */
     public static $defaultProperties = [
-        'Address',
-        'CollectionLocation',
-        'ContactPerson',
-        'CustomerCode',
-        'CustomerNumber',
-        'Email',
-        'Name',
+        'Address'            => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
+        'CollectionLocation' => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
+        'ContactPerson'      => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
+        'CustomerCode'       => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
+        'CustomerNumber'     => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
+        'Email'              => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
+        'Name'               => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
     ];
     // @codingStandardsIgnoreStart
     /** @var Address $Address */
@@ -103,5 +136,10 @@ class Customer extends AbstractEntity
         $this->setEmail($email);
         $this->setName($name);
         $this->setAddress($address);
+    }
+
+    public function xmlSerialize(Writer $writer)
+    {
+        parent::xmlSerialize($writer);
     }
 }

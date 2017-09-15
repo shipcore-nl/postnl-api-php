@@ -27,6 +27,7 @@
 namespace ThirtyBees\PostNL\HttpClient;
 
 // If undefined, map the defines to cURL's codes
+use AlgoliaSearch\Json;
 use ThirtyBees\PostNL\Exception\ApiConnectionException;
 use ThirtyBees\PostNL\Exception\ApiException;
 use ThirtyBees\PostNL\PostNL;
@@ -302,15 +303,30 @@ class CurlClient implements ClientInterface
             throw new ApiException("Unrecognized method $method");
         }
 
+        if ($body) {
+            file_put_contents(
+                __DIR__.'/../../request.json',
+                json_encode(
+                    [
+                        'headers' => $headers,
+                        'body'    => json_decode($body),
+                    ],
+                    JSON_PRETTY_PRINT + JSON_UNESCAPED_SLASHES
+                )
+            );
+        }
+
         $opts[CURLOPT_URL] = $absUrl;
         $opts[CURLOPT_RETURNTRANSFER] = true;
         $opts[CURLOPT_CONNECTTIMEOUT] = $this->connectTimeout;
         $opts[CURLOPT_TIMEOUT] = $this->timeout;
         $opts[CURLOPT_HEADERFUNCTION] = $headerCallback;
         $opts[CURLOPT_HTTPHEADER] = $headers;
-        curl_setopt($curl, CURLOPT_CAINFO, __DIR__.'/../../data/cacert.pem');
+        $opts[CURLOPT_FAILONERROR] = false;
         if (!PostNL::$verifySslCerts) {
             $opts[CURLOPT_SSL_VERIFYPEER] = false;
+        } else {
+            curl_setopt($curl, CURLOPT_CAINFO, __DIR__.'/../../data/cacert.pem');
         }
 
         curl_setopt_array($curl, $opts);

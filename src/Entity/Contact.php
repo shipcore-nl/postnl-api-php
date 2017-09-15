@@ -26,6 +26,10 @@
 
 namespace ThirtyBees\PostNL\Entity;
 
+use ThirtyBees\PostNL\Service\BarcodeService;
+use ThirtyBees\PostNL\Service\ConfirmingService;
+use ThirtyBees\PostNL\Service\LabellingService;
+
 /**
  * Class Contact
  *
@@ -45,10 +49,26 @@ class Contact extends AbstractEntity
 {
     /** @var string[] $defaultProperties */
     public static $defaultProperties = [
-        'ContactType',
-        'Email',
-        'SMSNr',
-        'TelNr',
+        'ContactType' => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
+        'Email'       => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
+        'SMSNr'       => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
+        'TelNr'       => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
     ];
     // @codingStandardsIgnoreStart
     /** @var string $ContactType */

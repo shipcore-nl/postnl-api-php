@@ -26,6 +26,10 @@
 
 namespace ThirtyBees\PostNL\Entity;
 
+use ThirtyBees\PostNL\Service\BarcodeService;
+use ThirtyBees\PostNL\Service\ConfirmingService;
+use ThirtyBees\PostNL\Service\LabellingService;
+
 /**
  * Class ProductOption
  *
@@ -41,8 +45,16 @@ class ProductOption extends AbstractEntity
 {
     /** @var string[] $defaultProperties */
     public static $defaultProperties = [
-        'Characteristic',
-        'Option',
+        'Characteristic' => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
+        'Option'         => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
     ];
     // @codingStandardsIgnoreStart
     /** @var string $Characteristic */

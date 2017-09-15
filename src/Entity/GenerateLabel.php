@@ -24,33 +24,51 @@
  * @license   https://opensource.org/licenses/MIT The MIT License
  */
 
-namespace ThirtyBees\PostNL\Request;
+namespace ThirtyBees\PostNL\Entity;
 
-use ThirtyBees\PostNL\Entity\Customer;
 use ThirtyBees\PostNL\Entity\Message\LabellingMessage;
 use ThirtyBees\PostNL\Entity\Message\Message;
-use ThirtyBees\PostNL\Entity\Shipment;
 use ThirtyBees\PostNL\PostNL;
+use ThirtyBees\PostNL\Service\BarcodeService;
+use ThirtyBees\PostNL\Service\ConfirmingService;
+use ThirtyBees\PostNL\Service\LabellingService;
 
 /**
- * Class LabelRequest
+ * Class GenerateLabel
  *
- * @package ThirtyBees\PostNL\Request
+ * @package ThirtyBees\PostNL\Entity
  *
  * @method Customer   getCustomer()
  * @method Message    getMessage()
  * @method Shipment[] getShipments()
  *
- * @method LabelRequest setCustomer(Customer $customer)
- * @method LabelRequest setMessage(Message $message)
- * @method LabelRequest setShipments(Shipment[] $shipments)
+ * @method GenerateLabel setCustomer(Customer $customer)
+ * @method GenerateLabel setMessage(Message $message)
+ * @method GenerateLabel setShipments(Shipment[] $shipments)
  */
-class LabelRequest extends AbstractRequest
+class GenerateLabel extends AbstractEntity
 {
+    /**
+     * Default properties and namespaces for the SOAP API
+     *
+     * @var array $defaultProperties
+     */
     public static $defaultProperties = [
-        'Customer',
-        'Message',
-        'Shipments',
+        'Customer'  => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
+        'Message'   => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
+        'Shipments' => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
     ];
     // @codingStandardsIgnoreStart
     /** @var Customer $Customer */
@@ -64,7 +82,7 @@ class LabelRequest extends AbstractRequest
     /**
      * LabelRequest constructor.
      *
-     * @param array            $shipments
+     * @param Shipment[]       $shipments
      * @param LabellingMessage $message
      * @param Customer         $customer
      */

@@ -26,6 +26,8 @@
 
 namespace ThirtyBees\PostNL\Entity;
 
+use Sabre\Xml\Writer;
+use Sabre\Xml\XmlSerializable;
 use ThirtyBees\PostNL\Exception\InvalidArgumentException;
 use ThirtyBees\PostNL\Util\UUID;
 
@@ -38,7 +40,7 @@ use ThirtyBees\PostNL\Util\UUID;
  *
  * @method static setid(string $id)
  */
-abstract class AbstractEntity implements \JsonSerializable
+abstract class AbstractEntity implements \JsonSerializable, XmlSerializable
 {
     /** @var array $defaultProperties */
     public static $defaultProperties = [];
@@ -46,6 +48,8 @@ abstract class AbstractEntity implements \JsonSerializable
     protected $other = [];
     /** @var string $id */
     public $id;
+    /** @var string $currentService */
+    public $currentService;
 
     /**
      * AbstractEntity constructor.
@@ -119,27 +123,48 @@ abstract class AbstractEntity implements \JsonSerializable
     }
 
     /**
-     * Specify data which should be serialized to JSON
+     * Return a serializable array for `json_encode`
      *
-     * @link  http://php.net/manual/en/jsonserializable.jsonserialize.php
-     * @return mixed data which can be serialized by <b>json_encode</b>,
-     * which is a value of any type other than a resource.
-     * @since 5.4.0
+     * @return array
      */
     public function jsonSerialize()
     {
         $json = [];
-        foreach (static::$defaultProperties as $property) {
-            if (!is_null($this->{$property})) {
-                $json[$property] = $this->{$property};
+        foreach (array_keys(static::$defaultProperties) as $propertyName) {
+            if (!is_null($this->{$propertyName})) {
+                $json[$propertyName] = $this->{$propertyName};
             }
         }
-        foreach (array_keys($this->other) as $property) {
-            if (!is_null($this->other[$property])) {
-                $json[$property] = $this->other[$property];
+        foreach (array_keys($this->other) as $propertyName) {
+            if (!is_null($this->other[$propertyName])) {
+                $json[$propertyName] = $this->other[$propertyName];
             }
         }
 
         return $json;
+    }
+
+    /**
+     * Return a serializable array for the XMLWriter
+     *
+     * @param Writer $writer
+     *
+     * @return void
+     */
+    public function xmlSerialize(Writer $writer)
+    {
+        $xml = [];
+        foreach (static::$defaultProperties as $propertyName => $namespace) {
+            $namespace = isset(static::$defaultProperties[$propertyName][$writer->service]) ? static::$defaultProperties[$propertyName][$writer->service] : '';
+            if (!is_null($this->{$propertyName})) {
+                $xml[$namespace ? "{{$namespace}}{$propertyName}" : $propertyName] = $this->{$propertyName};
+            }
+        }
+        // Auto extending this object with other properties is not supported with SOAP
+//        var_dump($xml);die();
+
+        file_put_contents(__DIR__.'/../../arraydump.txt', json_encode($xml, JSON_PRETTY_PRINT + JSON_UNESCAPED_SLASHES));
+
+        $writer->write($xml);
     }
 }

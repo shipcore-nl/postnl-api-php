@@ -24,14 +24,43 @@
  * @license   https://opensource.org/licenses/MIT The MIT License
  */
 
-namespace ThirtyBees\PostNL\Request;
+namespace ThirtyBees\PostNL\Entity\SOAP;
+
+use ThirtyBees\PostNL\Entity\AbstractEntity;
+use ThirtyBees\PostNL\Service\BarcodeService;
+use ThirtyBees\PostNL\Service\ConfirmingService;
+use ThirtyBees\PostNL\Service\LabellingService;
 
 /**
- * Class AbstractRequest
+ * Class UsernameToken
  *
- * @package ThirtyBees\PostNL\Request
+ * @package ThirtyBees\PostNL\Entity\SOAP
+ *
+ * @method string getUsername()
+ * @method string getPassword()
+ *
+ * @method UsernameToken setUsername(string $username)
+ * @method UsernameToken setPassword(string $password)
  */
-abstract class AbstractRequest extends \ThirtyBees\PostNL\Entity\AbstractEntity
+class UsernameToken extends AbstractEntity
 {
-
+    /** @var string[] $defaultProperties */
+    public static $defaultProperties = [
+        'Username' => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
+        'Password' => [
+            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
+            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
+            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
+        ],
+    ];
+    // @codingStandardsIgnoreStart
+    /** @var string $Username */
+    public $Username;
+    /** @var string $Password */
+    public $Password;
+    // @codingStandardsIgnoreEnd
 }

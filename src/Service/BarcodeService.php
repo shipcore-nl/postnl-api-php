@@ -26,6 +26,7 @@
 
 namespace ThirtyBees\PostNL\Service;
 
+use ThirtyBees\PostNL\Entity\Customer;
 use ThirtyBees\PostNL\PostNL;
 
 /**
@@ -36,22 +37,30 @@ use ThirtyBees\PostNL\PostNL;
 class BarcodeService extends AbstractService
 {
     const VERSION = '1.1';
-
-    const LIVE_ENDPOINT = 'https://api.postnl.nl/shipment/v1_1/barcode';
     const SANDBOX_ENDPOINT = 'https://api-sandbox.postnl.nl/shipment/v1_1/barcode';
+    const LIVE_ENDPOINT = 'https://api.postnl.nl/shipment/v1_1/barcode';
+
+    const SOAP_ACTION = 'http://postnl.nl/cif/services/BarcodeWebService/IBarcodeWebService/GenerateBarcode';
+    const ENVELOPE_NAMESPACE = 'http://schemas.xmlsoap.org/soap/envelope/';
+    const SERVICES_NAMESPACE = 'http://postnl.nl/cif/services/BarcodeWebService/';
+    const DOMAIN_NAMESPACE = 'http://postnl.nl/cif/domain/BarcodeWebService/';
 
     /**
      * Generate a single barcode
      *
+     * @param Customer|null $customer
+     *
      * @return string Barcode
      */
-    public static function generateBarcode()
+    public static function generateBarcode($customer = null)
     {
-        $client = PostNL::getHttpClient();
-        $customer = PostNL::getCustomer();
+        if (!$customer instanceof Customer) {
+            $customer = PostNL::getCustomer();
+        }
+
         $apiKey = PostNL::getApiKey();
 
-        $result = $client->request(
+        $result =  PostNL::getHttpClient()->request(
             'GET',
             PostNL::getSandbox() ? static::SANDBOX_ENDPOINT : static::LIVE_ENDPOINT,
             [
@@ -67,5 +76,10 @@ class BarcodeService extends AbstractService
 
         // FIXME: Do some error checking here
         return json_decode($result[0], true)['Barcode'];
+    }
+
+    protected static function setNamespaces()
+    {
+
     }
 }

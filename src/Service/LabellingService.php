@@ -27,7 +27,7 @@
 namespace ThirtyBees\PostNL\Service;
 
 use ThirtyBees\PostNL\PostNL;
-use ThirtyBees\PostNL\Request\LabelRequest;
+use ThirtyBees\PostNL\Entity\GenerateLabel;
 
 /**
  * Class LabellingService
@@ -36,19 +36,33 @@ use ThirtyBees\PostNL\Request\LabelRequest;
  */
 class LabellingService extends AbstractService
 {
+    // API Version
     const VERSION = '2.1';
 
+    // Endpoints
     const LIVE_ENDPOINT = 'https://api.postnl.nl/shipment/v2_1/label';
     const SANDBOX_ENDPOINT = 'https://api-sandbox.postnl.nl/shipment/v2_1/label';
+
+    // SOAP API
+    const SOAP_ACTION = 'http://postnl.nl/cif/services/LabellingWebService/ILabellingWebService/GenerateLabel';
+    const ENVELOPE_NAMESPACE = 'http://schemas.xmlsoap.org/soap/envelope/';
+    const SERVICES_NAMESPACE = 'http://postnl.nl/cif/services/LabellingWebService/';
+    const DOMAIN_NAMESPACE = 'http://postnl.nl/cif/domain/LabellingWebService/';
 
     /**
      * Generate a single barcode
      *
-     * @param LabelRequest $request
+     * @param GenerateLabel $request
+     * @param bool          $confirm Should the label immediately be confirmed (pre-alerted)?
      *
-     * @return string Barcode
+     * @return string
      */
-    public static function generateLabel(LabelRequest $request, $confirm = true)
+    public static function generateLabel(GenerateLabel $request, $confirm = false)
+    {
+
+    }
+
+    protected static function generateLabelREST(GenerateLabel $request, $confirm = false)
     {
         $client = PostNL::getHttpClient();
         $apiKey = PostNL::getApiKey();
@@ -58,6 +72,34 @@ class LabellingService extends AbstractService
             PostNL::getSandbox() ? static::SANDBOX_ENDPOINT : static::LIVE_ENDPOINT,
             [
                 "apikey: $apiKey",
+                'Content-Type: application/json',
+                'Accept: application/json',
+            ],
+            [
+                'confirm' => $confirm,
+            ],
+            json_encode($request)
+        );
+
+        // FIXME
+        return $result;
+    }
+
+    protected static function generateLabelSOAP(GenerateLabel $request, $confirm = false)
+    {
+        $client = PostNL::getHttpClient();
+        $apiKey = PostNL::getApiKey();
+
+
+        $request->currentService = 'Labelling';
+
+        $result = $client->request(
+            'POST',
+            PostNL::getSandbox() ? static::SANDBOX_ENDPOINT : static::LIVE_ENDPOINT,
+            [
+                "apikey: $apiKey",
+                'Content-Type: application/json',
+                'Accept: application/json',
             ],
             [
                 'confirm' => $confirm,

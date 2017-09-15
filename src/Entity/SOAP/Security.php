@@ -24,54 +24,34 @@
  * @license   https://opensource.org/licenses/MIT The MIT License
  */
 
-namespace ThirtyBees\PostNL\Entity;
+namespace ThirtyBees\PostNL\Entity\SOAP;
 
+use ThirtyBees\PostNL\Entity\AbstractEntity;
 use ThirtyBees\PostNL\Service\BarcodeService;
 use ThirtyBees\PostNL\Service\ConfirmingService;
 use ThirtyBees\PostNL\Service\LabellingService;
 
 /**
- * Class Area
+ * Class Security
  *
- * @package ThirtyBees\PostNL\Entity
+ * @package ThirtyBees\PostNL\Entity\SOAP
  *
- * @method Coordinates getCoordinatesNorthWest()
- * @method Coordinates getCoordinatesSouthEast()
+ * @method UsernameToken getUsernameToken()
  *
- * @method Area setCoordinatesNorthWest(Coordinates $NW)
- * @method Area setCoordinatesSouthEast(Coordinates $SE)
+ * @method Security setUserNameToken(UsernameToken $token)
  */
-class Area extends AbstractEntity
+class Security extends AbstractEntity
 {
     /** @var string[] $defaultProperties */
     public static $defaultProperties = [
-        'CoordinatesNorthWest' => [
-            'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
-            'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
-            'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
-        ],
-        'CoordinatesSouthEast' => [
+        'UsernameToken' => [
             'Barcode'    => BarcodeService::DOMAIN_NAMESPACE,
             'Confirming' => ConfirmingService::DOMAIN_NAMESPACE,
             'Labelling'  => LabellingService::DOMAIN_NAMESPACE,
         ],
     ];
     // @codingStandardsIgnoreStart
-    /** @var Coordinates $CoordinatesNorthWest */
-    protected $CoordinatesNorthWest = null;
-    /** @var Coordinates $CoordinatesSouthEast */
-    protected $CoordinatesSouthEast = null;
+    /** @var UserNameToken $UsernameToken */
+    public $UsernameToken;
     // @codingStandardsIgnoreEnd
-
-    /**
-     * @param Coordinates $NW
-     * @param Coordinates $SE
-     */
-    public function __construct($NW, $SE)
-    {
-        parent::__construct();
-
-        $this->setCoordinatesNorthWest($NW);
-        $this->setCoordinatesSouthEast($SE);
-    }
 }
