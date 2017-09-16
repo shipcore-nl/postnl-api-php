@@ -303,19 +303,6 @@ class CurlClient implements ClientInterface
             throw new ApiException("Unrecognized method $method");
         }
 
-        if ($body) {
-            file_put_contents(
-                __DIR__.'/../../request.json',
-                json_encode(
-                    [
-                        'headers' => $headers,
-                        'body'    => json_decode($body),
-                    ],
-                    JSON_PRETTY_PRINT + JSON_UNESCAPED_SLASHES
-                )
-            );
-        }
-
         $opts[CURLOPT_URL] = $absUrl;
         $opts[CURLOPT_RETURNTRANSFER] = true;
         $opts[CURLOPT_CONNECTTIMEOUT] = $this->connectTimeout;

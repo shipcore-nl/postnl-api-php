@@ -39,10 +39,16 @@ use ThirtyBees\PostNL\HttpClient\GuzzleClient;
  */
 class PostNL
 {
+    // New REST API
     const MODE_REST = 1;
+    // New SOAP API
     const MODE_SOAP = 2;
+    // First pick the new REST API, if communication fails, pick the new SOAP API
     const MODE_REST_THEN_SOAP = 3;
+    // First pick the new SOAP API, if communication fails, pick the new RES API
     const MODE_SOAP_THEN_REST = 4;
+    // Old SOAP API
+    const MODE_LEGACY = 5;
 
     /**
      * Verify SSL certificate of the PostNL REST API

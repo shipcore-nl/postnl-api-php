@@ -26,7 +26,13 @@
 
 namespace ThirtyBees\PostNL\Service;
 
+/**
+ * Class AbstractService
+ *
+ * @package ThirtyBees\PostNL\Service
+ */
 abstract class AbstractService
 {
-
+    const COMMON_NAMESPACE = 'http://postnl.nl/cif/services/common/';
+    const XML_SCHEMA_NAMESPACE = 'http://www.w3.org/2001/XMLSchema-instance';
 }
