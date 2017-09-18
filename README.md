@@ -31,7 +31,7 @@ hopefully be completed soon.
 | **Send & Track**                            |                          |                           |         |
 | Barcode webservice                          | Expected: October, 2017  | alpha                     | 1.1     |
 | Labelling webservice                        | Expected: October, 2017  | alpha                     | 2.1     |
-| Confirming webservice                       | Expected: October, 2017  | Expected: September, 2017 | 1.10    |
+| Confirming webservice                       | Expected: October, 2017  | alpha                     | 1.10    |
 | Shippingstatus webservice                   | Expected: October, 2017  | Expected: September, 2017 | 1.6     |
 | **Delivery Options**                        |                          |                           |         |
 | Deliverydate webservice                     | Expected: October, 2017  | Expected: September, 2017 | 2.2     |
