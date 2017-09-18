@@ -28,6 +28,7 @@ namespace ThirtyBees\PostNL\Service;
 
 use ThirtyBees\PostNL\Entity\Request\GenerateBarcode;
 use ThirtyBees\PostNL\Entity\SOAP\Security;
+use ThirtyBees\PostNL\Exception\CifException;
 use ThirtyBees\PostNL\PostNL;
 use ThirtyBees\PostNL\Util\PostNLXmlService;
 
@@ -41,6 +42,8 @@ class BarcodeService extends AbstractService
     const VERSION = '1.1';
     const SANDBOX_ENDPOINT = 'https://api-sandbox.postnl.nl/shipment/v1_1/barcode';
     const LIVE_ENDPOINT = 'https://api.postnl.nl/shipment/v1_1/barcode';
+    const LEGACY_SANDBOX_ENDPOINT = 'https://testservice.postnl.com/CIF_SB/BarcodeWebService/1_1/BarcodeWebService.svc';
+    const LEGACY_LIVE_ENDPOINT = 'https://service.postnl.com/CIF_SB/BarcodeWebService/1_1/BarcodeWebService.svc';
 
     const SOAP_ACTION = 'http://postnl.nl/cif/services/BarcodeWebService/IBarcodeWebService/GenerateBarcode';
     const ENVELOPE_NAMESPACE = 'http://schemas.xmlsoap.org/soap/envelope/';
@@ -57,6 +60,8 @@ class BarcodeService extends AbstractService
         self::SERVICES_NAMESPACE     => 'bar',
         self::DOMAIN_NAMESPACE       => 'bar1',
         Security::SECURITY_NAMESPACE => 'wsse',
+        self::XML_SCHEMA_NAMESPACE   => 'i',
+        self::COMMON_NAMESPACE       => 'ns0',
     ];
 
     /**
@@ -119,7 +124,6 @@ class BarcodeService extends AbstractService
             $xmlService->namespaceMap[$namespace] = $prefix;
         }
 
-
         $xmlService->setService('Barcode');
 
         $request = $xmlService->write(
@@ -134,9 +138,13 @@ class BarcodeService extends AbstractService
             ]
         );
 
+        $endpoint = PostNL::getSandbox()
+            ? (PostNL::getCurrentMode() === PostNL::MODE_LEGACY ? static::LEGACY_SANDBOX_ENDPOINT : static::SANDBOX_ENDPOINT)
+            : (PostNL::getCurrentMode() === PostNL::MODE_LEGACY ? static::LEGACY_LIVE_ENDPOINT : static::LIVE_ENDPOINT);
+
         $result =  PostNL::getHttpClient()->request(
             'POST',
-            PostNL::getSandbox() ? static::SANDBOX_ENDPOINT : static::LIVE_ENDPOINT,
+            $endpoint,
             [
                 "SOAPAction: \"$soapAction\"",
                 'Content-Type: text/xml',
@@ -147,10 +155,48 @@ class BarcodeService extends AbstractService
         );
 
         $xml = simplexml_load_string($result[0]);
-        foreach (static::$namespaces as $namespace => $prefix) {
-            $xml->registerXPathNamespace($prefix, $namespace);
-        }
+        static::registerNamespaces($xml);
+        static::validateSOAPResponse($xml);
 
         return (string) $xml->xpath('//bar:GenerateBarcodeResponse/bar1:Barcode')[0][0];
+    }
+
+    /**
+     * Register namespaces
+     *
+     * @param \SimpleXMLElement $element
+     */
+    protected static function registerNamespaces(\SimpleXMLElement $element)
+    {
+        foreach (static::$namespaces as $namespace => $prefix) {
+            $element->registerXPathNamespace($prefix, $namespace);
+        }
+    }
+
+    /**
+     * @param \SimpleXMLElement $xml
+     *
+     * @return bool
+     * @throws CifException
+     */
+    protected static function validateSOAPResponse(\SimpleXMLElement $xml)
+    {
+        // Detect errors
+        $cifErrors = $xml->xpath('//ns0:CifException/ns0:Errors/ns0:ExceptionData');
+        if (count($cifErrors)) {
+            $exceptionData = [];
+            foreach ($cifErrors as $error) {
+                /** @var \SimpleXMLElement $error */
+                static::registerNamespaces($error);
+                $exceptionData[] = [
+                    'description' => (string) $error->xpath('//ns0:Description')[0],
+                    'message'     => (string) $error->xpath('//ns0:ErrorMsg')[0],
+                    'code'        => (int) $error->xpath('//ns0:ErrorNumber')[0],
+                ];
+            }
+            throw new CifException($exceptionData);
+        }
+
+        return true;
     }
 }

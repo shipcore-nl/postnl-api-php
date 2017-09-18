@@ -226,6 +226,7 @@ class PostNL
         if (!in_array($current, [
             static::MODE_REST,
             static::MODE_SOAP,
+            static::MODE_LEGACY,
         ])) {
             return false;
         }

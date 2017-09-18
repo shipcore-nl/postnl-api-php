@@ -47,6 +47,7 @@ class LabellingService extends AbstractService
     const LIVE_ENDPOINT = 'https://api.postnl.nl/shipment/v2_1/label';
     const SANDBOX_ENDPOINT = 'https://api-sandbox.postnl.nl/shipment/v2_1/label';
     const LEGACY_SANDBOX_ENDPOINT = 'https://testservice.postnl.com/CIF_SB/LabellingWebService/2_1/LabellingWebService.svc';
+    const LEGACY_LIVE_ENDPOINT = 'https://service.postnl.com/CIF_SB/LabellingWebService/2_1/LabellingWebService.svc';
 
     // SOAP API
     const SOAP_ACTION = 'http://postnl.nl/cif/services/LabellingWebService/ILabellingWebService/GenerateLabel';
@@ -144,9 +145,13 @@ class LabellingService extends AbstractService
             ]
         );
 
+        $endpoint = PostNL::getSandbox()
+            ? (PostNL::getCurrentMode() === PostNL::MODE_LEGACY ? static::LEGACY_SANDBOX_ENDPOINT : static::SANDBOX_ENDPOINT)
+            : (PostNL::getCurrentMode() === PostNL::MODE_LEGACY ? static::LEGACY_LIVE_ENDPOINT : static::LIVE_ENDPOINT);
+
         $result =  PostNL::getHttpClient()->request(
             'POST',
-            PostNL::getSandbox() ? static::SANDBOX_ENDPOINT : static::LIVE_ENDPOINT,
+            $endpoint,
             [
                 "SOAPAction: \"$soapAction\"",
                 'Content-Type: text/xml',
@@ -157,9 +162,7 @@ class LabellingService extends AbstractService
         );
 
         $xml = simplexml_load_string($result[0]);
-        foreach (static::$namespaces as $namespace => $prefix) {
-            $xml->registerXPathNamespace($prefix, $namespace);
-        }
+        static::registerNamespaces($xml);
         static::validateSOAPResponse($xml);
 
         // FIXME: should not return the raw result
@@ -188,7 +191,7 @@ class LabellingService extends AbstractService
     {
         // Detect errors
         $cifErrors = $xml->xpath('//ns0:CifException/ns0:Errors/ns0:ExceptionData');
-        if (count((array) $cifErrors)) {
+        if (count($cifErrors)) {
             $exceptionData = [];
             foreach ($cifErrors as $error) {
                 /** @var \SimpleXMLElement $error */
