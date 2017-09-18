@@ -30,6 +30,7 @@ use ThirtyBees\PostNL\Entity\Barcode;
 use ThirtyBees\PostNL\Entity\Customer;
 use ThirtyBees\PostNL\Entity\Label;
 use ThirtyBees\PostNL\Entity\Message\LabellingMessage;
+use ThirtyBees\PostNL\Entity\Request\Confirming;
 use ThirtyBees\PostNL\Entity\Request\GenerateBarcode;
 use ThirtyBees\PostNL\Entity\Request\GenerateLabel;
 use ThirtyBees\PostNL\Entity\Shipment;
@@ -446,5 +447,15 @@ class PostNL
     public function generateLabel($shipment, $printertype = 'GraphicFile|PDF', $confirm = false, $format = Label::FORMAT_A4, $offset = 0)
     {
         return $this->getLabellingService()->generateLabel(new GenerateLabel([$shipment], new LabellingMessage($printertype), $this->customer), $confirm);
+    }
+
+    /**
+     * @param Shipment $shipment
+     *
+     * @return bool
+     */
+    public function confirm($shipment)
+    {
+        return $this->getConfirmingService()->confirm(new Confirming([$shipment], $this->customer));
     }
 }

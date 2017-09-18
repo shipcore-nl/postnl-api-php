@@ -26,6 +26,12 @@
 
 namespace ThirtyBees\PostNL\Service;
 
+use ThirtyBees\PostNL\Entity\SOAP\Security;
+use ThirtyBees\PostNL\Exception\CifException;
+use ThirtyBees\PostNL\PostNL;
+use ThirtyBees\PostNL\Entity\Request\Confirming;
+use ThirtyBees\PostNL\Util\PostNLXmlService;
+
 /**
  * Class ConfirmingService
  *
@@ -34,15 +40,169 @@ namespace ThirtyBees\PostNL\Service;
 class ConfirmingService extends AbstractService
 {
     // API Version
-    const VERSION = '1.10';
+    const VERSION = '2.1';
 
     // Endpoints
-    const LIVE_ENDPOINT = 'https://api-sandbox.postnl.nl/shipment/v1_10/confirm';
-    const SANDBOX_ENDPOINT = 'https://api.postnl.nl/shipment/v1_10/confirm';
+    const LIVE_ENDPOINT = 'https://api.postnl.nl/shipment/v1_10/confirm';
+    const SANDBOX_ENDPOINT = 'https://api-sandbox.postnl.nl/shipment/v1_10/confirm';
+    const LEGACY_SANDBOX_ENDPOINT = 'https://testservice.postnl.com/CIF_SB/ConfirmingWebService/1_10/ConfirmingWebService.svc';
+    const LEGACY_LIVE_ENDPOINT = 'https://service.postnl.com/CIF_SB/ConfirmingWebService/1_10/ConfirmingWebService.svc';
 
     // SOAP API
     const SOAP_ACTION = 'http://postnl.nl/cif/services/ConfirmingWebService/IConfirmingWebService/Confirming';
     const ENVELOPE_NAMESPACE = 'http://schemas.xmlsoap.org/soap/envelope/';
     const SERVICES_NAMESPACE = 'http://postnl.nl/cif/services/ConfirmingWebService/';
     const DOMAIN_NAMESPACE = 'http://postnl.nl/cif/domain/ConfirmingWebService/';
+
+    /**
+     * Namespaces uses for the SOAP version of this service
+     *
+     * @var array $namespaces
+     */
+    public static $namespaces = [
+        self::ENVELOPE_NAMESPACE     => 'SOAP-ENV',
+        self::SERVICES_NAMESPACE     => 'services',
+        self::DOMAIN_NAMESPACE       => 'domain',
+        Security::SECURITY_NAMESPACE => 'wsse',
+        self::XML_SCHEMA_NAMESPACE   => 'schema',
+        self::COMMON_NAMESPACE       => 'common',
+    ];
+
+    /**
+     * Generate a single barcode
+     *
+     * @param Confirming $request
+     * @param bool       $confirm Should the label immediately be confirmed (pre-alerted)?
+     *
+     * @return string
+     */
+    public function confirm(Confirming $request, $confirm = false)
+    {
+        // TODO: make it try with the other method if one fails
+        return ($this->postnl->getCurrentMode() === PostNL::MODE_REST
+            ? $this->confirmRest($request, $confirm)
+            : $this->confirmSoap($request, $confirm));
+    }
+
+    /**
+     * Generate a single barcode via REST
+     *
+     * @param Confirming $request
+     * @param bool          $confirm
+     *
+     * @return string
+     */
+    protected function confirmRest(Confirming $request, $confirm = false)
+    {
+        $client = $this->postnl->getHttpClient();
+        $apiKey = $this->postnl->getRestApiKey();
+
+        $result = $client->request(
+            'POST',
+            $this->postnl->getSandbox() ? static::SANDBOX_ENDPOINT : static::LIVE_ENDPOINT,
+            [
+                "apikey: $apiKey",
+                'Content-Type: application/json',
+                'Accept: application/json',
+            ],
+            [
+                'confirm' => $confirm,
+            ],
+            json_encode($request)
+        );
+
+        // FIXME
+        return $result[0];
+    }
+
+    /**
+     * Generate a single label via SOAP
+     *
+     * @param Confirming $confirming
+     *
+     * @return string
+     */
+    protected function confirmSoap(Confirming $confirming)
+    {
+        $soapAction = static::SOAP_ACTION;
+        $xmlService = new PostNLXmlService();
+        foreach (static::$namespaces as $namespace => $prefix) {
+            $xmlService->namespaceMap[$namespace] = $prefix;
+        }
+        $xmlService->setService('Confirming');
+
+        $request = $xmlService->write(
+            '{'.static::ENVELOPE_NAMESPACE.'}Envelope',
+            [
+                '{'.static::ENVELOPE_NAMESPACE.'}Header' => [
+                    ['{'.Security::SECURITY_NAMESPACE.'}Security' => new Security($this->postnl->getToken())],
+                ],
+                '{'.static::ENVELOPE_NAMESPACE.'}Body'   => [
+                    '{'.static::SERVICES_NAMESPACE.'}Confirming' => $confirming,
+                ],
+            ]
+        );
+
+        $endpoint = $this->postnl->getSandbox()
+            ? ($this->postnl->getCurrentMode() === PostNL::MODE_LEGACY ? static::LEGACY_SANDBOX_ENDPOINT : static::SANDBOX_ENDPOINT)
+            : ($this->postnl->getCurrentMode() === PostNL::MODE_LEGACY ? static::LEGACY_LIVE_ENDPOINT : static::LIVE_ENDPOINT);
+
+        $result = $this->postnl->getHttpClient()->request(
+            'POST',
+            $endpoint,
+            [
+                "SOAPAction: \"$soapAction\"",
+                'Content-Type: text/xml',
+                'Accept: text/xml',
+            ],
+            [],
+            $request
+        );
+
+        $xml = simplexml_load_string($result[0]);
+        static::registerNamespaces($xml);
+        static::validateSOAPResponse($xml);
+
+        // FIXME: should not return the raw result
+        return count($xml->xpath('//domain:ConfirmingResponseShipment')) >= 1;
+    }
+
+    /**
+     * Register namespaces
+     *
+     * @param \SimpleXMLElement $element
+     */
+    protected function registerNamespaces(\SimpleXMLElement $element)
+    {
+        foreach (static::$namespaces as $namespace => $prefix) {
+            $element->registerXPathNamespace($prefix, $namespace);
+        }
+    }
+
+    /**
+     * @param \SimpleXMLElement $xml
+     *
+     * @return bool
+     * @throws CifException
+     */
+    protected function validateSOAPResponse(\SimpleXMLElement $xml)
+    {
+        // Detect errors
+        $cifErrors = $xml->xpath('//common:CifException/common:Errors/common:ExceptionData');
+        if (count($cifErrors)) {
+            $exceptionData = [];
+            foreach ($cifErrors as $error) {
+                /** @var \SimpleXMLElement $error */
+                static::registerNamespaces($error);
+                $exceptionData[] = [
+                    'description' => (string) $error->xpath('//common:Description')[0],
+                    'message'     => (string) $error->xpath('//common:ErrorMsg')[0],
+                    'code'        => (int) $error->xpath('//common:ErrorNumber')[0],
+                ];
+            }
+            throw new CifException($exceptionData);
+        }
+
+        return true;
+    }
 }

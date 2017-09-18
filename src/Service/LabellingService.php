@@ -26,7 +26,6 @@
 
 namespace ThirtyBees\PostNL\Service;
 
-use Elasticsearch\Endpoints\Indices\Upgrade\Post;
 use ThirtyBees\PostNL\Entity\SOAP\Security;
 use ThirtyBees\PostNL\Exception\CifException;
 use ThirtyBees\PostNL\PostNL;
@@ -51,6 +50,7 @@ class LabellingService extends AbstractService
 
     // SOAP API
     const SOAP_ACTION = 'http://postnl.nl/cif/services/LabellingWebService/ILabellingWebService/GenerateLabel';
+    const SOAP_ACTION_NO_CONFIRM = 'http://postnl.nl/cif/services/LabellingWebService/ILabellingWebService/GenerateLabelWithoutConfirm';
     const ENVELOPE_NAMESPACE = 'http://schemas.xmlsoap.org/soap/envelope/';
     const SERVICES_NAMESPACE = 'http://postnl.nl/cif/services/LabellingWebService/';
     const DOMAIN_NAMESPACE = 'http://postnl.nl/cif/domain/LabellingWebService/';
@@ -61,12 +61,12 @@ class LabellingService extends AbstractService
      * @var array $namespaces
      */
     public static $namespaces = [
-        self::ENVELOPE_NAMESPACE     => 'SOAP-ENV',
-        self::SERVICES_NAMESPACE     => 'bar',
-        self::DOMAIN_NAMESPACE       => 'bar1',
+        self::ENVELOPE_NAMESPACE     => 'soap',
+        self::SERVICES_NAMESPACE     => 'services',
+        self::DOMAIN_NAMESPACE       => 'domain',
         Security::SECURITY_NAMESPACE => 'wsse',
-        self::XML_SCHEMA_NAMESPACE   => 'i',
-        self::COMMON_NAMESPACE       => 'ns0',
+        self::XML_SCHEMA_NAMESPACE   => 'schema',
+        self::COMMON_NAMESPACE       => 'common',
     ];
 
     /**
@@ -126,7 +126,7 @@ class LabellingService extends AbstractService
      */
     protected function generateLabelSOAP(GenerateLabel $generateLabel, $confirm = false)
     {
-        $soapAction = static::SOAP_ACTION;
+        $soapAction = $confirm ? static::SOAP_ACTION : static::SOAP_ACTION_NO_CONFIRM;
         $xmlService = new PostNLXmlService();
         foreach (static::$namespaces as $namespace => $prefix) {
             $xmlService->namespaceMap[$namespace] = $prefix;
@@ -166,7 +166,7 @@ class LabellingService extends AbstractService
         static::validateSOAPResponse($xml);
 
         // FIXME: should not return the raw result
-        return (string) $xml->xpath('//bar1:Content')[0][0];
+        return (string) $xml->xpath('//domain:Content')[0][0];
     }
 
     /**
@@ -190,16 +190,16 @@ class LabellingService extends AbstractService
     protected function validateSOAPResponse(\SimpleXMLElement $xml)
     {
         // Detect errors
-        $cifErrors = $xml->xpath('//ns0:CifException/ns0:Errors/ns0:ExceptionData');
+        $cifErrors = $xml->xpath('//common:CifException/common:Errors/common:ExceptionData');
         if (count($cifErrors)) {
             $exceptionData = [];
             foreach ($cifErrors as $error) {
                 /** @var \SimpleXMLElement $error */
                 static::registerNamespaces($error);
                 $exceptionData[] = [
-                    'description' => (string) $error->xpath('//ns0:Description')[0],
-                    'message'     => (string) $error->xpath('//ns0:ErrorMsg')[0],
-                    'code'        => (int) $error->xpath('//ns0:ErrorNumber')[0],
+                    'description' => (string) $error->xpath('//common:Description')[0],
+                    'message'     => (string) $error->xpath('//common:ErrorMsg')[0],
+                    'code'        => (int) $error->xpath('//common:ErrorNumber')[0],
                 ];
             }
             throw new CifException($exceptionData);

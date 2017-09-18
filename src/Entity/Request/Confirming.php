@@ -29,28 +29,26 @@ namespace ThirtyBees\PostNL\Entity\Request;
 use Sabre\Xml\Writer;
 use ThirtyBees\PostNL\Entity\AbstractEntity;
 use ThirtyBees\PostNL\Entity\Customer;
-use ThirtyBees\PostNL\Entity\Message\LabellingMessage;
 use ThirtyBees\PostNL\Entity\Message\Message;
 use ThirtyBees\PostNL\Entity\Shipment;
-use ThirtyBees\PostNL\PostNL;
 use ThirtyBees\PostNL\Service\BarcodeService;
 use ThirtyBees\PostNL\Service\ConfirmingService;
 use ThirtyBees\PostNL\Service\LabellingService;
 
 /**
- * Class GenerateLabel
+ * Class Confirming
  *
  * @package ThirtyBees\PostNL\Entity
  *
- * @method Customer         getCustomer()
- * @method LabellingMessage getMessage()
- * @method Shipment[]       getShipments()
+ * @method Customer   getCustomer()
+ * @method Message    getMessage()
+ * @method Shipment[] getShipments()
  *
- * @method GenerateLabel setCustomer(Customer $customer)
- * @method GenerateLabel setMessage(LabellingMessage $message)
- * @method GenerateLabel setShipments(Shipment[] $shipments)
+ * @method Confirming setCustomer(Customer $customer)
+ * @method Confirming setMessage(Message $message)
+ * @method Confirming setShipments(Shipment[] $shipments)
  */
-class GenerateLabel extends AbstractEntity
+class Confirming extends AbstractEntity
 {
     /**
      * Default properties and namespaces for the SOAP API
@@ -77,7 +75,7 @@ class GenerateLabel extends AbstractEntity
     // @codingStandardsIgnoreStart
     /** @var Customer $Customer */
     public $Customer;
-    /** @var LabellingMessage $Message */
+    /** @var Message $Message */
     public $Message;
     /** @var Shipment[] $Shipments */
     public $Shipments;
@@ -86,16 +84,16 @@ class GenerateLabel extends AbstractEntity
     /**
      * LabelRequest constructor.
      *
-     * @param Shipment[]       $shipments
-     * @param LabellingMessage $message
-     * @param Customer         $customer
+     * @param Shipment[] $shipments
+     * @param Customer   $customer
+     * @param Message    $message
      */
-    public function __construct(array $shipments, LabellingMessage $message = null, Customer $customer = null)
+    public function __construct(array $shipments, Customer $customer, Message $message = null)
     {
         parent::__construct();
 
         $this->setShipments($shipments);
-        $this->setMessage($message ?: new LabellingMessage());
+        $this->setMessage($message ?: new Message());
         $this->setCustomer($customer);
     }
 

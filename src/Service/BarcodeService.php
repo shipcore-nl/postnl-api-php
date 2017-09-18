@@ -60,11 +60,11 @@ class BarcodeService extends AbstractService
      */
     public static $namespaces = [
         self::ENVELOPE_NAMESPACE     => 'SOAP-ENV',
-        self::SERVICES_NAMESPACE     => 'bar',
-        self::DOMAIN_NAMESPACE       => 'bar1',
+        self::SERVICES_NAMESPACE     => 'services',
+        self::DOMAIN_NAMESPACE       => 'domain',
         Security::SECURITY_NAMESPACE => 'wsse',
-        self::XML_SCHEMA_NAMESPACE   => 'i',
-        self::COMMON_NAMESPACE       => 'ns0',
+        self::XML_SCHEMA_NAMESPACE   => 'schema',
+        self::COMMON_NAMESPACE       => 'common',
     ];
 
     /**
@@ -161,7 +161,7 @@ class BarcodeService extends AbstractService
         static::registerNamespaces($xml);
         static::validateSOAPResponse($xml);
 
-        return (string) $xml->xpath('//bar:GenerateBarcodeResponse/bar1:Barcode')[0][0];
+        return (string) $xml->xpath('//services:GenerateBarcodeResponse/domain:Barcode')[0][0];
     }
 
     /**
@@ -185,16 +185,16 @@ class BarcodeService extends AbstractService
     protected static function validateSOAPResponse(\SimpleXMLElement $xml)
     {
         // Detect errors
-        $cifErrors = $xml->xpath('//ns0:CifException/ns0:Errors/ns0:ExceptionData');
+        $cifErrors = $xml->xpath('//common:CifException/common:Errors/common:ExceptionData');
         if (count($cifErrors)) {
             $exceptionData = [];
             foreach ($cifErrors as $error) {
                 /** @var \SimpleXMLElement $error */
                 static::registerNamespaces($error);
                 $exceptionData[] = [
-                    'description' => (string) $error->xpath('//ns0:Description')[0],
-                    'message'     => (string) $error->xpath('//ns0:ErrorMsg')[0],
-                    'code'        => (int) $error->xpath('//ns0:ErrorNumber')[0],
+                    'description' => (string) $error->xpath('//common:Description')[0],
+                    'message'     => (string) $error->xpath('//common:ErrorMsg')[0],
+                    'code'        => (int) $error->xpath('//common:ErrorNumber')[0],
                 ];
             }
             throw new CifException($exceptionData);
