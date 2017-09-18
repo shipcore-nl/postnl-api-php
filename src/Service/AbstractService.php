@@ -26,6 +26,8 @@
 
 namespace ThirtyBees\PostNL\Service;
 
+use ThirtyBees\PostNL\PostNL;
+
 /**
  * Class AbstractService
  *
@@ -33,6 +35,18 @@ namespace ThirtyBees\PostNL\Service;
  */
 abstract class AbstractService
 {
+    protected $postnl;
+
     const COMMON_NAMESPACE = 'http://postnl.nl/cif/services/common/';
     const XML_SCHEMA_NAMESPACE = 'http://www.w3.org/2001/XMLSchema-instance';
+
+    /**
+     * AbstractService constructor.
+     *
+     * @param PostNL $postnl PostNL instance
+     */
+    public function __construct($postnl)
+    {
+        $this->postnl = $postnl;
+    }
 }

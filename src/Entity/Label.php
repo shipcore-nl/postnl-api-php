@@ -45,6 +45,9 @@ use ThirtyBees\PostNL\Service\LabellingService;
  */
 class Label extends AbstractEntity
 {
+    const FORMAT_A4 = 1;
+    const FORMAT_A6 = 2;
+
     /** @var string[] $defaultProperties */
     public static $defaultProperties = [
         'Content'     => [

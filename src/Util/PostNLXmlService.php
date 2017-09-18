@@ -27,6 +27,7 @@
 namespace ThirtyBees\PostNL\Util;
 
 use Sabre\Xml\Service;
+use Sabre\Xml\XmlSerializable;
 
 /**
  * Class PostNLXmlService

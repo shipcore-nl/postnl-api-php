@@ -26,6 +26,7 @@
 
 namespace ThirtyBees\PostNL\Entity\SOAP;
 
+use Sabre\Xml\Writer;
 use ThirtyBees\PostNL\Entity\AbstractEntity;
 use ThirtyBees\PostNL\Service\BarcodeService;
 use ThirtyBees\PostNL\Service\ConfirmingService;
@@ -62,6 +63,12 @@ class UsernameToken extends AbstractEntity
     public $Username;
     /** @var string $Password */
     public $Password;
+    /**
+     * Indicates whether this token has been created for the legacy API
+     *
+     * @var bool $legacy
+     */
+    protected $legacy;
     // @codingStandardsIgnoreEnd
 
     /**
@@ -69,12 +76,39 @@ class UsernameToken extends AbstractEntity
      *
      * @param string $username
      * @param string $password Plaintext password
+     * @param bool   $legacy   Whether this token is created for the legacy API
      */
-    public function __construct($username, $password)
+    public function __construct($username, $password, $legacy = false)
     {
         parent::__construct();
 
         $this->setUsername($username);
         $this->setPassword($password);
+        $this->legacy = $legacy;
+    }
+
+    /**
+     * Return a serializable array for the XMLWriter
+     *
+     * @param Writer $writer
+     *
+     * @return void
+     */
+    public function xmlSerialize(Writer $writer)
+    {
+        $xml = [];
+        foreach (static::$defaultProperties as $propertyName => $namespace) {
+            $namespace = isset(static::$defaultProperties[$propertyName][$writer->service]) ? static::$defaultProperties[$propertyName][$writer->service] : '';
+            if (!is_null($this->{$propertyName})) {
+                if ($this->legacy && $propertyName === 'Password') {
+                    $xml[$namespace ? "{{$namespace}}{$propertyName}" : $propertyName] = sha1($this->{$propertyName});
+                } else {
+                    $xml[$namespace ? "{{$namespace}}{$propertyName}" : $propertyName] = $this->{$propertyName};
+                }
+            }
+        }
+        // Auto extending this object with other properties is not supported with SOAP
+
+        $writer->write($xml);
     }
 }

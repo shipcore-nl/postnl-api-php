@@ -310,11 +310,11 @@ class CurlClient implements ClientInterface
         $opts[CURLOPT_HEADERFUNCTION] = $headerCallback;
         $opts[CURLOPT_HTTPHEADER] = $headers;
         $opts[CURLOPT_FAILONERROR] = false;
-        if (!PostNL::$verifySslCerts) {
-            $opts[CURLOPT_SSL_VERIFYPEER] = false;
-        } else {
-            curl_setopt($curl, CURLOPT_CAINFO, __DIR__.'/../../data/cacert.pem');
-        }
+//        if (!PostNL::$verifySslCerts) {
+//            $opts[CURLOPT_SSL_VERIFYPEER] = false;
+//        } else {
+            $opts[CURLOPT_CAINFO] = __DIR__.'/../../data/cacert.pem';
+//        }
 
         curl_setopt_array($curl, $opts);
     }

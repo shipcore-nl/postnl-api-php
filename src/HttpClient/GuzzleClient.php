@@ -158,7 +158,7 @@ class GuzzleClient implements ClientInterface
 
         $options = [
             'headers' => $requestHeaders,
-            'verify'  => PostNL::$verifySslCerts ? __DIR__.'/../../data/cacert.pem' : false,
+            'verify'  => __DIR__.'/../../data/cacert.pem',
         ];
 
         if ($method === 'GET') {

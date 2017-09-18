@@ -84,16 +84,16 @@ class GenerateBarcode extends AbstractEntity
     /**
      * LabelRequest constructor.
      *
-     * @param Barcode  $barcode
-     * @param Message  $message
-     * @param Customer $customer
+     * @param Barcode      $barcode
+     * @param Customer     $customer
+     * @param Message|null $message
      */
-    public function __construct(Barcode $barcode, Message $message = null, Customer $customer = null)
+    public function __construct(Barcode $barcode, Customer $customer, Message $message = null)
     {
         parent::__construct();
 
         $this->setBarcode($barcode);
+        $this->setCustomer($customer);
         $this->setMessage($message ?: new Message());
-        $this->setCustomer($customer ?: PostNL::getCustomer());
     }
 }

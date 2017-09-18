@@ -77,12 +77,12 @@ class LabellingService extends AbstractService
      *
      * @return string
      */
-    public static function generateLabel(GenerateLabel $request, $confirm = false)
+    public function generateLabel(GenerateLabel $request, $confirm = false)
     {
         // TODO: make it try with the other method if one fails
-        return (PostNL::getCurrentMode() === PostNL::MODE_REST
-            ? static::generateLabelREST($request, $confirm)
-            : static::generateLabelSOAP($request, $confirm));
+        return ($this->postnl->getCurrentMode() === PostNL::MODE_REST
+            ? $this->generateLabelREST($request, $confirm)
+            : $this->generateLabelSOAP($request, $confirm));
     }
 
     /**
@@ -93,14 +93,14 @@ class LabellingService extends AbstractService
      *
      * @return string
      */
-    protected static function generateLabelREST(GenerateLabel $request, $confirm = false)
+    protected function generateLabelREST(GenerateLabel $request, $confirm = false)
     {
-        $client = PostNL::getHttpClient();
-        $apiKey = PostNL::getRestApiKey();
+        $client = $this->postnl->getHttpClient();
+        $apiKey = $this->postnl->getRestApiKey();
 
         $result = $client->request(
             'POST',
-            PostNL::getSandbox() ? static::SANDBOX_ENDPOINT : static::LIVE_ENDPOINT,
+            $this->postnl->getSandbox() ? static::SANDBOX_ENDPOINT : static::LIVE_ENDPOINT,
             [
                 "apikey: $apiKey",
                 'Content-Type: application/json',
@@ -124,7 +124,7 @@ class LabellingService extends AbstractService
      *
      * @return string
      */
-    protected static function generateLabelSOAP(GenerateLabel $generateLabel, $confirm = false)
+    protected function generateLabelSOAP(GenerateLabel $generateLabel, $confirm = false)
     {
         $soapAction = static::SOAP_ACTION;
         $xmlService = new PostNLXmlService();
@@ -137,7 +137,7 @@ class LabellingService extends AbstractService
             '{'.static::ENVELOPE_NAMESPACE.'}Envelope',
             [
                 '{'.static::ENVELOPE_NAMESPACE.'}Header' => [
-                    ['{'.Security::SECURITY_NAMESPACE.'}Security' => new Security(PostNL::getSoapUsernameToken())],
+                    ['{'.Security::SECURITY_NAMESPACE.'}Security' => new Security($this->postnl->getToken())],
                 ],
                 '{'.static::ENVELOPE_NAMESPACE.'}Body'   => [
                     '{'.static::SERVICES_NAMESPACE.'}GenerateLabel' => $generateLabel,
@@ -145,11 +145,11 @@ class LabellingService extends AbstractService
             ]
         );
 
-        $endpoint = PostNL::getSandbox()
-            ? (PostNL::getCurrentMode() === PostNL::MODE_LEGACY ? static::LEGACY_SANDBOX_ENDPOINT : static::SANDBOX_ENDPOINT)
-            : (PostNL::getCurrentMode() === PostNL::MODE_LEGACY ? static::LEGACY_LIVE_ENDPOINT : static::LIVE_ENDPOINT);
+        $endpoint = $this->postnl->getSandbox()
+            ? ($this->postnl->getCurrentMode() === PostNL::MODE_LEGACY ? static::LEGACY_SANDBOX_ENDPOINT : static::SANDBOX_ENDPOINT)
+            : ($this->postnl->getCurrentMode() === PostNL::MODE_LEGACY ? static::LEGACY_LIVE_ENDPOINT : static::LIVE_ENDPOINT);
 
-        $result =  PostNL::getHttpClient()->request(
+        $result =  $this->postnl->getHttpClient()->request(
             'POST',
             $endpoint,
             [
@@ -174,7 +174,7 @@ class LabellingService extends AbstractService
      *
      * @param \SimpleXMLElement $element
      */
-    protected static function registerNamespaces(\SimpleXMLElement $element)
+    protected function registerNamespaces(\SimpleXMLElement $element)
     {
         foreach (static::$namespaces as $namespace => $prefix) {
             $element->registerXPathNamespace($prefix, $namespace);
@@ -187,7 +187,7 @@ class LabellingService extends AbstractService
      * @return bool
      * @throws CifException
      */
-    protected static function validateSOAPResponse(\SimpleXMLElement $xml)
+    protected function validateSOAPResponse(\SimpleXMLElement $xml)
     {
         // Detect errors
         $cifErrors = $xml->xpath('//ns0:CifException/ns0:Errors/ns0:ExceptionData');

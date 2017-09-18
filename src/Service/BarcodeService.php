@@ -39,6 +39,9 @@ use ThirtyBees\PostNL\Util\PostNLXmlService;
  */
 class BarcodeService extends AbstractService
 {
+    /** @var PostNL $postnl */
+    protected $postnl;
+
     const VERSION = '1.1';
     const SANDBOX_ENDPOINT = 'https://api-sandbox.postnl.nl/shipment/v1_1/barcode';
     const LIVE_ENDPOINT = 'https://api.postnl.nl/shipment/v1_1/barcode';
@@ -71,12 +74,12 @@ class BarcodeService extends AbstractService
      *
      * @return string Barcode
      */
-    public static function generateBarcode(GenerateBarcode $generateBarcode)
+    public function generateBarcode(GenerateBarcode $generateBarcode)
     {
         // TODO: make it try with the other method if one fails
-        return (PostNL::getCurrentMode() === PostNL::MODE_REST
-            ? static::generateBarcodeREST($generateBarcode)
-            : static::generateBarcodeSOAP($generateBarcode));
+        return ($this->postnl->getCurrentMode() === PostNL::MODE_REST
+            ? $this->generateBarcodeREST($generateBarcode)
+            : $this->generateBarcodeSOAP($generateBarcode));
     }
 
     /**
@@ -86,13 +89,13 @@ class BarcodeService extends AbstractService
      *
      * @return string Barcode
      */
-    public static function generateBarcodeREST(GenerateBarcode $generateBarcode)
+    public function generateBarcodeREST(GenerateBarcode $generateBarcode)
     {
-        $apiKey = PostNL::getRestApiKey();
+        $apiKey = $this->postnl->getRestApiKey();
 
-        $result =  PostNL::getHttpClient()->request(
+        $result =  $this->postnl->getHttpClient()->request(
             'GET',
-            PostNL::getSandbox() ? static::SANDBOX_ENDPOINT : static::LIVE_ENDPOINT,
+            $this->postnl->getSandbox() ? static::SANDBOX_ENDPOINT : static::LIVE_ENDPOINT,
             [
                 'Content-Type: application/json; charset=utf-8',
                 'Accept: application/json',
@@ -116,7 +119,7 @@ class BarcodeService extends AbstractService
      *
      * @return string Barcode
      */
-    public static function generateBarcodeSOAP(GenerateBarcode $generateBarcode)
+    public function generateBarcodeSOAP(GenerateBarcode $generateBarcode)
     {
         $soapAction = static::SOAP_ACTION;
         $xmlService = new PostNLXmlService();
@@ -130,7 +133,7 @@ class BarcodeService extends AbstractService
             '{'.static::ENVELOPE_NAMESPACE.'}Envelope',
             [
                 '{'.static::ENVELOPE_NAMESPACE.'}Header' => [
-                    ['{'.Security::SECURITY_NAMESPACE.'}Security' => new Security(PostNL::getSoapUsernameToken())],
+                    ['{'.Security::SECURITY_NAMESPACE.'}Security' => new Security($this->postnl->getToken())],
                 ],
                 '{'.static::ENVELOPE_NAMESPACE.'}Body'   => [
                     '{'.static::SERVICES_NAMESPACE.'}GenerateBarcode' => $generateBarcode,
@@ -138,11 +141,11 @@ class BarcodeService extends AbstractService
             ]
         );
 
-        $endpoint = PostNL::getSandbox()
-            ? (PostNL::getCurrentMode() === PostNL::MODE_LEGACY ? static::LEGACY_SANDBOX_ENDPOINT : static::SANDBOX_ENDPOINT)
-            : (PostNL::getCurrentMode() === PostNL::MODE_LEGACY ? static::LEGACY_LIVE_ENDPOINT : static::LIVE_ENDPOINT);
+        $endpoint = $this->postnl->getSandbox()
+            ? ($this->postnl->getCurrentMode() === PostNL::MODE_LEGACY ? static::LEGACY_SANDBOX_ENDPOINT : static::SANDBOX_ENDPOINT)
+            : ($this->postnl->getCurrentMode() === PostNL::MODE_LEGACY ? static::LEGACY_LIVE_ENDPOINT : static::LIVE_ENDPOINT);
 
-        $result =  PostNL::getHttpClient()->request(
+        $result =  $this->postnl->getHttpClient()->request(
             'POST',
             $endpoint,
             [
