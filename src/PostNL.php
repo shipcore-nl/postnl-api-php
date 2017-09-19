@@ -26,6 +26,7 @@
 
 namespace ThirtyBees\PostNL;
 
+use MijnPostNLExportModule\Postnl\Exceptions\InvalidBarcodeTypeException;
 use ThirtyBees\PostNL\Entity\Barcode;
 use ThirtyBees\PostNL\Entity\Customer;
 use ThirtyBees\PostNL\Entity\Label;
@@ -35,6 +36,8 @@ use ThirtyBees\PostNL\Entity\Request\GenerateBarcode;
 use ThirtyBees\PostNL\Entity\Request\GenerateLabel;
 use ThirtyBees\PostNL\Entity\Shipment;
 use ThirtyBees\PostNL\Entity\SOAP\UsernameToken;
+use ThirtyBees\PostNL\Exception\InvalidBarcodeException;
+use ThirtyBees\PostNL\Exception\InvalidConfigurationException;
 use ThirtyBees\PostNL\HttpClient\ClientInterface;
 use ThirtyBees\PostNL\HttpClient\CurlClient;
 use ThirtyBees\PostNL\HttpClient\GuzzleClient;
@@ -59,6 +62,18 @@ class PostNL
     const MODE_SOAP_THEN_REST = 4;
     // Old SOAP API
     const MODE_LEGACY = 5;
+
+    /**
+     * 3S countries
+     *
+     * @var array
+     */
+    public static $threeSCountries = [
+        "NL", "BE", "AT", "BG", "CZ", "DK", "EE", "FI", "FR", "DE", "GB", "GR", "HU", "IE", "IT",
+        "LV", "LT", "LU", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "MC", "AL", "AD", "BA", "IC",
+        "FO", "GI", "GL", "GG", "IS", "JE", "HR", "LI", "MK", "MD", "ME", "NO", "UA", "SM", "RS",
+        "TR", "VA", "BY", "CH",
+    ];
 
     /**
      * Verify SSL certificate of the PostNL REST API
@@ -427,11 +442,67 @@ class PostNL
      * @param string $type
      * @param string $range
      * @param string $serie
+     * @param bool   $eps   Defaults to EPS shipments = true, because this will result
+     *                      in a valid barcode for both domestic and EPS shipments
      *
      * @return string
+     * @throws InvalidBarcodeException
      */
-    public function generateBarcode($type, $range, $serie = '000000000-999999999')
+    public function generateBarcode($type, $range = null, $serie = null, $eps = true)
     {
+        if (!in_array($type, ['2S', '3S', 'CC', 'CD', 'CF', 'CP'])) {
+            throw new InvalidBarcodeException("Barcode type `$type` is invalid");
+        }
+
+        if (!$range) {
+            if (in_array($type, ['2S', '3S'])) {
+                $range = $this->customer->getCustomerCode();
+            } else {
+                $range = $this->customer->getGlobalPackCustomerCode();
+            }
+        }
+        if (!$range) {
+            throw new InvalidBarcodeException('Unable to find a valid range');
+        }
+
+        if (!$serie) {
+            $serie = $this->findBarcodeSerie($type, $range, $eps);
+        }
+
+        return $this->getBarcodeService()->generateBarcode(new GenerateBarcode(new Barcode($type, $range, $serie), $this->customer));
+    }
+
+    /**
+     * Generate a single barcode by country code
+     *
+     * @param string $iso Country ISO Code
+     *
+     * @return string
+     * @throws InvalidConfigurationException
+     */
+    public function generateBarcodeByCountryCode($iso)
+    {
+        if (in_array(strtoupper($iso), static::$threeSCountries)) {
+            $range = $this->customer->getCustomerCode();
+            $type = '3S';
+        } else {
+            $range = $this->customer->getGlobalPackCustomerCode();
+            $type = $this->customer->getGlobalPackBarcodeType();
+
+            if (!$range) {
+                throw new InvalidConfigurationException('GlobalPack customer code has not been set for the current customer');
+            }
+            if (!$type) {
+                throw new InvalidConfigurationException('GlobalPack barcode type has not been set for the current customer');
+            }
+        }
+
+        $serie = $this->findBarcodeSerie(
+            $type,
+            $range,
+            strtoupper($iso) !== 'NL' && in_array(strtoupper($iso), static::$threeSCountries)
+        );
+
         return $this->getBarcodeService()->generateBarcode(new GenerateBarcode(new Barcode($type, $range, $serie), $this->customer));
     }
 
@@ -457,5 +528,59 @@ class PostNL
     public function confirm($shipment)
     {
         return $this->getConfirmingService()->confirm(new Confirming([$shipment], $this->customer));
+    }
+
+    /**
+     * Find a suitable serie for the barcode
+     *
+     * @param string $type
+     * @param string $range
+     * @param bool   $eps   Indicates whether it is an EPS Shipment
+     *
+     * @return string
+     * @throws InvalidBarcodeException
+     */
+    protected function findBarcodeSerie($type, $range, $eps)
+    {
+        switch ($type) {
+            case '2S':
+                $serie = '0000000-9999999';
+
+                break;
+            case '3S':
+                if ($eps) {
+                    switch (strlen($range)) {
+                        case 4:
+                            $serie = '0000000-9999999';
+
+                            break;
+                        case 3:
+                            $serie = '10000000-20000000';
+
+                            break;
+                        case 1:
+                            $serie = '5210500000-5210600000';
+
+                            break;
+                        default:
+                            throw new InvalidBarcodeException('Invalid range');
+
+                            break;
+                    }
+
+                    break;
+                }
+                // Regular domestic 15 digit code
+                $serie = (strlen($range) === 4 ? '987000000-987600000' : '00000000000-99999999999');
+
+                break;
+            default:
+                // GlobalPack
+                $serie = '0000-9999';
+
+                break;
+        }
+
+        return $serie;
     }
 }

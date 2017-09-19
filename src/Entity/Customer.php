@@ -43,6 +43,8 @@ use ThirtyBees\PostNL\Service\LabellingService;
  * @method string getEmail()
  * @method string getName()
  * @method string getAddress()
+ * @method string getGlobalPackCustomerCode()
+ * @method string getGlobalPackBarcodeType()
  *
  * @method Customer setCustomerNumber(string $customerNr)
  * @method Customer setCustomerCode(string $customerCode)
@@ -51,6 +53,8 @@ use ThirtyBees\PostNL\Service\LabellingService;
  * @method Customer setEmail(string $email)
  * @method Customer setName(string $name)
  * @method Customer setAddress(Address $address)
+ * @method Customer setGlobalPackCustomerCode(string $code)
+ * @method Customer setGlobalPackBarcodeType(string $type)
  */
 class Customer extends AbstractEntity
 {
@@ -103,6 +107,10 @@ class Customer extends AbstractEntity
     protected $CustomerCode = null;
     /** @var string $CustomerNumber */
     protected $CustomerNumber = null;
+    /** @var null|string $GlobalPackCustomerCode */
+    protected $GlobalPackCustomerCode = null;
+    /** @var null|string $GlobalPackBarcodeType */
+    protected $GlobalPackBarcodeType = null;
     /** @var string $Email */
     protected $Email = null;
     /** @var string $Name */
@@ -136,10 +144,5 @@ class Customer extends AbstractEntity
         $this->setEmail($email);
         $this->setName($name);
         $this->setAddress($address);
-    }
-
-    public function xmlSerialize(Writer $writer)
-    {
-        parent::xmlSerialize($writer);
     }
 }
